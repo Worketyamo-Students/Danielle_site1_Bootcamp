@@ -1,0 +1,17 @@
+:root{
+    --defaultsize:2rem;
+    --defaultbg:transparent;
+}
+
+*{
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+html{
+    font-size: var(--defaultsize);
+}
+
+body{
+    background: var(--defaultbg);
+}

@@ -1,6 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Italianno&display=swap');
+
 :root{
     --defaultsize:2rem;
-    --defaultbg:transparent;
+    --defaultapbar:#353535;
+    --defaulticon:#14AE5C;
 }
 
 *{
@@ -12,6 +16,7 @@ html{
     font-size: var(--defaultsize);
 }
 
-body{
-    background: var(--defaultbg);
+ion-icon{
+    font-size: 1,6rem;
+    color:var(--defaulticon)
 }

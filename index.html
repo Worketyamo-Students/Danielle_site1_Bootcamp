@@ -1,14 +1,82 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="./assets/img/Votre texte de paragraphe.png" type="image/x-icon">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link rel="icon" href="./assets/img/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="./assets/css/index.css">
     <script src="./assets/js/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <title>Tchopamor</title>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-apbar: #353535;
+            --color-head:transparent;
+            --color-bouton:#14AE5C;
+            --color-t:#13B818;
+            --color-decouv:#BA5E0D;
+            --color-bien:#353535;
+            --color-gout:#461420;
+            --color-regard:#D32F2F;
+            --font-inter:"Inter", sans-serif;
+            --font-regard:"Italianno", cursive;
+          }
+        </style>
 </head>
-<body>
-    
+
+<body class="w-screen ">
+    <header class="w-full h-[100px] bg-decouv">
+        <div class="h-[40px] bg-apbar"></div>
+        <div class="h-[60px] bg-transparent flex items-center justify-between px-2">
+            <a href="#" class="font-bold font-[32px] text-t">Tchopamor</a>
+            <div class="w-20 flex items-center justify-between">
+                <button
+                    class="w-[73px] h-[30px] bg-bouton text-[12px]  rounded-[5px] font-inter text-white text-center">Connexion</button>
+                <button
+                    class="w-[73px] h-[30px] bg-bouton  text-[12px] rounded-[5px] font-inter text-white text-center">S'inscrire</button>
+            </div>
+        </div>
+    </header>
+    <main class="w-full h-full">
+        <section class="w-full h-[10rem] bg-decouv">
+            <h1 class="font-medium text-[.8rem] font-inter text-center py-3">Bienvenue sur Tchopamor</h1>
+            <p class="font-regular text-[.4rem] text-bien text-center indent-[1.5rem] font-inter">Ici, chaque plat
+                raconte une histoire. Notre site vous
+                ouvre les portes d’un voyage culinaire où les recettes sont plus que de simples instructions.
+                Peu importe qui vous etes, vous trouverez ici des trésors de recettes inspirées d’origine variées,
+                simples mais toujours pleines de gout.</p>
+            <p class=" text-[.4rem] text-gout text-center pt-5 font-semibold font-inter">Entrer, goutez, et laissez la
+                gourmandise vous guider</p>
+            <div class="w-full flex justify-center py-2">
+                <button class="text-white text-[.5rem]  bg-bouton rounded-[10px] w-25 h-5 font-inter ">Decouvrir les
+                    saveurs
+                </button>
+            </div>
+        </section>
+        <section class="w-full pt-5">
+            <h3 class="text-regard text-[1rem] font-regard indent-4">Retrouver aussi les recettes de tous vos plats
+                camerounais.</h3>
+            <img src="./assets/img/foods.svg" alt="" class="">
+            <div class="w-full py-2 flex items-center justify-center">
+                <button
+                    class="text-white text-[.8rem]  bg-bouton rounded-[10px] w-25 h-5 flex justify-around text-center font-inter">
+                    <img src="./assets/img/Vector.svg" alt="">
+                    Je cuisine !
+                </button>
+            </div>
+    </main>
+    <footer class="w-full bg-gout h-[7.3rem]">
+        <a href="#" class="font-bold font-[40px] text-t ">Tchopamor</a>
+        <p class="text-white text-[.5rem] py-2">Conditions d’utilisation</p>
+        <p class="text-white text-[.5rem]">Politique De Confidentialité</p>
+        <p class="text-white text-[.5rem] py-2">© 2025 Tchopamor. Tout droits reservés.</p>
+        <p class="text-[.2rem] text-right">By Danielle</p>
+        <div class="h-[40px] bg-apbar"></div>
+    </footer>
+
 </body>
+
 </html>

@@ -15,7 +15,7 @@
         @theme {
             --color-apbar: #353535;
             --color-head:transparent;
-            --color-bouton:#14AE5C;
+            --color-bouton:#BA5E0D;
             --color-t:#13B818;
             --color-decouv:#BA5E0D;
             --color-bien:#151515;
@@ -28,10 +28,12 @@
 </head>
 
 <body class="w-screen ">
-    <header class="w-full h-[70px] bg-decouv">
+    <header class="w-full px-3 ">
+        <div class="w-full h-[40px] bg-bouton"></div>
         <div class="h-[60px] bg-transparent flex items-center justify-between px-2">
-            <a href="#" class="font-bold font-[20px] text-bouton sm:text-[50px]">Tchopamor</a>
-            <div class="w-20 flex items-center justify-between">
+            <a href="#" class="font-bold text-[16px] text-bouton sm:text-[15px]">Tchopamor</a>
+            <ion-icon name="menu" class="sm:hidden" >Menu</ion-icon>
+            <div class=" hidden sm:w-20 sm:flex sm:items-center sm:justify-between">
                 <button
                     class="w-[73px] h-[30px] bg-bouton text-[12px]  rounded-[5px] font-inter text-white text-center">Connexion</button>
                 <button
@@ -39,27 +41,50 @@
             </div>
         </div>
     </header>
-    <main class="w-full h-full">
-        <section class="w-full h-auto bg-decouv">
-            <h1 class="font-medium text-[.8rem] font-inter text-center sm:text-[1.5rem] sm:py-2">Bienvenue sur Tchopamor</h1>
-            <p class="font-regular text-[.4rem] text-bien text-center indent-[1.5rem] font-inter sm:text-[.7rem]">Ici, chaque plat
+    <main class="w-full h-full px-3">
+        <section class="w-full h-auto ">
+            <h1 class="font-normal text-[.6rem] font-inter text-center sm:text-[1.5rem] sm:py-2">Bienvenue sur Tchopamor
+            </h1>
+            <p class="font-light text-[.3rem] text-bien text-center indent-[1.5rem] font-inter sm:text-[.7rem]">Ici,
+                chaque plat
                 raconte une histoire. Notre site vous
                 ouvre les portes d’un voyage culinaire où les recettes sont plus que de simples instructions.
                 Peu importe qui vous etes, vous trouverez ici des trésors de recettes inspirées d’origine variées,
                 simples mais toujours pleines de gout.</p>
-            <p class=" text-[.4rem] text-gout text-center pt-5 font-semibold font-inter sm:text-[.7rem]">Entrer, goutez, et laissez la
-                gourmandise vous guider</p>
+            <p class=" text-[.3rem] text-center pt-5 font-inter sm:text-[.7rem]">Entrer, goutez,
+                et laissez la gourmandise vous guider</p>
             <div class="w-full flex justify-center py-2">
-                <button class="text-white text-[.5rem]  bg-bouton rounded-[10px] w-25 h-5 font-inter sm:w-40 sm:h-7 sm:text-[1rem]">Decouvrir les
+                <button
+                    class="text-white text-[.3rem]  bg-bouton rounded-[7px] w-20 h-3 font-inter sm:w-40 sm:h-7 sm:text-[1rem]">Decouvrir
+                    les
                     saveurs
                 </button>
             </div>
         </section>
         <section class="w-full pt-5 bg-transparent">
-            <h3 class="text-bouton text-[1rem] font-regard indent-4 sm:text-[2rem]">Retrouver aussi les recettes de tous vos plats
+            <h3 class="text-bouton text-[1rem] font-regard indent-4 sm:text-[2rem]">Retrouver aussi les recettes de tous
+                vos plats
                 camerounais.</h3>
-            <img src="./assets/img/foods.svg" alt="photo de nourritures" class="w-full">
-            <div class="w-full py-2 flex items-center justify-center mb-5">
+            <div class="flex justify-around overflow-x-auto p-4 scroll-smooth space-x-4">
+               
+                <div class="text-center">
+                     <img src="./assets/img/Le_Eru,_un_plat_camerounais.jpg" alt="" class="w-40 h-30 rounded">
+                     <p class="text-[12px]">Eru</p>
+                </div>
+                 <div class="text-center">
+                     <img src="./assets/img/okok.webp" alt="" class="w-40 h-30 rounded">
+                     <p class="text-[12px]">Okok</p>
+                </div>
+                 <div class="text-center">
+                     <img src="./assets/img/Poisson-Braise-Cameroun.jpg" alt="" class="w-40 h-30 rounded">
+                     <p class="text-[12px]">Poisson braisé</p>
+                </div>
+                 <div class="text-center">
+                     <img src="./assets/img/images.jpeg" alt="" class="w-40 h-30 rounded">
+                     <p class="text-[12px]">Ndolè</p>
+                </div>
+            </div>
+                <div class="w-full py-2 flex items-center justify-center mb-5">
                 <button
                     class="text-white text-[.8rem]  bg-bouton rounded-[10px] w-25 h-5 flex justify-around text-center font-inter sm:text-[1rem] sm:w-40 sm:h-7">
                     <img src="./assets/img/Vector.svg" alt="icone fourchette">
@@ -68,13 +93,12 @@
             </div>
         </section>
     </main>
-    <footer class="w-full bg-gout h-auto pl-2">
-        <a href="#" class="font-bold font-[40px] text-bouton text-center sm:text-[60px] pl-10">Tchopamor</a>
-        <br><a href="#" class="text-white text-[.5rem] py-2 sm:text-[1rem]">Conditions d’utilisation</a>
-        <br><a href="#" class="text-white text-[.5rem] sm:text-[1rem]">Politique De Confidentialité</a>
-        <br><a href="#" class="text-white text-[.5rem] py-2 sm:text-[1rem]">© 2025 Tchopamor. Tout droits reservés.</a>
-        <br><a href="#" class="text-[.3rem] text-end text-left sm:text-[.5rem]">By Danielle</a>
-
+    <footer class="w-full bg-gout h-auto">
+        <a href="#" class="font-bold font-[16pxpx] text-bouton text-center sm:text-[30px]">Tchopamor</a>
+        <br><a href="#" class="text-white text-[10px] sm:text-[16px]">Conditions d’utilisation</a>
+        <br><a href="#" class="text-white text-[10px] sm:text-[16px]">Politique De Confidentialité</a>
+        <br><a href="#" class="text-white text-[10px] sm:text-[16px]">© 2025 Tchopamor. Tout droits reservés.</a>
+       
     </footer>
 
 </body>

@@ -13,7 +13,7 @@
     <title>Tchopamor</title>
     <style type="text/tailwindcss">
         @theme {
-            --color-apbar: #353535;
+            --color-apbar: #d9d9d9;
             --color-head:transparent;
             --color-bouton:#BA5E0D;
             --color-t:#13B818;
@@ -22,17 +22,16 @@
             --color-gout:#461420;
             --color-regard:#D32F2F;
             --font-inter:"Inter", sans-serif;
-            --font-regard:"Italianno", cursive;
           }
         </style>
 </head>
 
 <body class="w-screen ">
-    <header class="w-full px-3 ">
-        <div class="w-full h-[40px] bg-bouton"></div>
-        <div class="h-[60px] bg-transparent flex items-center justify-between px-2">
-            <a href="#" class="font-bold text-[16px] text-bouton sm:text-[15px]">Tchopamor</a>
-            <ion-icon name="menu" class="sm:hidden" >Menu</ion-icon>
+    <header class="w-full  ">
+        <div class="w-full h-[40px] bg-bouton sm:hidden"></div>
+        <div class="h-[60px] bg-transparent flex items-center justify-between px-3">
+            <a href="#" class="font-bold text-[16px] text-bouton sm:text-[26px]">Tchopamor</a>
+            <ion-icon name="menu" class="sm:hidden">Menu</ion-icon>
             <div class=" hidden sm:w-20 sm:flex sm:items-center sm:justify-between">
                 <button
                     class="w-[73px] h-[30px] bg-bouton text-[12px]  rounded-[5px] font-inter text-white text-center">Connexion</button>
@@ -51,54 +50,52 @@
                 ouvre les portes d’un voyage culinaire où les recettes sont plus que de simples instructions.
                 Peu importe qui vous etes, vous trouverez ici des trésors de recettes inspirées d’origine variées,
                 simples mais toujours pleines de gout.</p>
-            <p class=" text-[.3rem] text-center pt-5 font-inter sm:text-[.7rem]">Entrer, goutez,
+            <p class=" text-[.3rem] text-center pt-2 font-inter sm:text-[.7rem]">Entrer, goutez,
                 et laissez la gourmandise vous guider</p>
             <div class="w-full flex justify-center py-2">
                 <button
-                    class="text-white text-[.3rem]  bg-bouton rounded-[7px] w-20 h-3 font-inter sm:w-40 sm:h-7 sm:text-[1rem]">Decouvrir
+                    class="text-white text-[12px]  bg-bouton rounded-[7px] w-17 h-3 font-inter sm:w-25 sm:h-5 sm:text-[16px]">Decouvrir
                     les
                     saveurs
                 </button>
             </div>
         </section>
-        <section class="w-full pt-5 bg-transparent">
-            <h3 class="text-bouton text-[1rem] font-regard indent-4 sm:text-[2rem]">Retrouver aussi les recettes de tous
-                vos plats
-                camerounais.</h3>
-            <div class="flex justify-around overflow-x-auto p-4 scroll-smooth space-x-4">
-               
-                <div class="text-center">
-                     <img src="./assets/img/Le_Eru,_un_plat_camerounais.jpg" alt="" class="w-40 h-30 rounded">
-                     <p class="text-[12px]">Eru</p>
+        <section class="w-full h-auto pt-3 bg-transparent">
+            <h3 class="text-bouton text-[16px] font-inter indent-4 sm:text-[30px]" text-center>Retrouver aussi les
+                recettes de tous vos plats camerounais.</h3>
+            <div class="w-full h-auto flex  overflow-x-auto gap-x-4 ">
+
+                <div class=" flex flex-col justify-between items-center">
+                    <img src="./assets/img/Le_Eru,_un_plat_camerounais.jpg" alt=""
+                        class="w-20 h-10  rounded inline-block sm:w-40 sm:h-30">
+                    <p class="text-[12px] sm:text-[20px]">Eru</p>
                 </div>
-                 <div class="text-center">
-                     <img src="./assets/img/okok.webp" alt="" class="w-40 h-30 rounded">
-                     <p class="text-[12px]">Okok</p>
+                <div class="flex flex-col justify-between items-center ">
+                    <img src="./assets/img/okok.webp" alt="" class=" w-20 h-10 sm:w-40 sm:h-30 rounded inline-block">
+                    <p class="text-[12px] sm:text-[20px]">Okok</p>
                 </div>
-                 <div class="text-center">
-                     <img src="./assets/img/Poisson-Braise-Cameroun.jpg" alt="" class="w-40 h-30 rounded">
-                     <p class="text-[12px]">Poisson braisé</p>
+                <div class="flex flex-col justify-between items-center ">
+                    <img src="./assets/img/Poisson-Braise-Cameroun.jpg" alt=""
+                        class="w-20 h-10 sm:w-40 sm:h-30 rounded inline-block">
+                    <p class="text-[12px] sm:text-[20px]">Poisson braisé</p>
                 </div>
-                 <div class="text-center">
-                     <img src="./assets/img/images.jpeg" alt="" class="w-40 h-30 rounded">
-                     <p class="text-[12px]">Ndolè</p>
+                <div class="flex flex-col justify-between items-center ">
+                    <img src="./assets/img/images.jpeg" alt="" class="w-20 h-10 sm:w-40 sm:h-30 rounded inline-block">
+                    <p class="text-[12px] sm:text-[20px]">Ndolè</p>
                 </div>
+                
             </div>
-                <div class="w-full py-2 flex items-center justify-center mb-5">
-                <button
-                    class="text-white text-[.8rem]  bg-bouton rounded-[10px] w-25 h-5 flex justify-around text-center font-inter sm:text-[1rem] sm:w-40 sm:h-7">
-                    <img src="./assets/img/Vector.svg" alt="icone fourchette">
-                    Je cuisine !
-                </button>
+            <div class="w-full py-2 flex items-center justify-center ">
+                <button Je cuisine ! </button>
             </div>
         </section>
     </main>
-    <footer class="w-full bg-gout h-auto">
+    <footer class="w-full bg-apbar h-auto">
         <a href="#" class="font-bold font-[16pxpx] text-bouton text-center sm:text-[30px]">Tchopamor</a>
-        <br><a href="#" class="text-white text-[10px] sm:text-[16px]">Conditions d’utilisation</a>
-        <br><a href="#" class="text-white text-[10px] sm:text-[16px]">Politique De Confidentialité</a>
-        <br><a href="#" class="text-white text-[10px] sm:text-[16px]">© 2025 Tchopamor. Tout droits reservés.</a>
-       
+        <br><a href="#" class="text-white text-[7px] sm:text-[10px]">Conditions d’utilisation</a>
+        <br><a href="#" class="text-white text-[7px] sm:text-[10px]">Politique De Confidentialité</a>
+        <br><a href="#" class="text-white text-[7px] sm:text-[10px]">© 2025 Tchopamor. Tout droits reservés.</a>
+
     </footer>
 
 </body>

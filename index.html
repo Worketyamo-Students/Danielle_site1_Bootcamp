@@ -26,21 +26,23 @@
         </style>
 </head>
 
-<body class="w-screen ">
-    <header class="w-full  ">
-        <div class="w-full h-[40px] bg-bouton sm:hidden"></div>
-        <div class="h-[60px] bg-transparent flex items-center justify-between px-3">
-            <a href="#" class="font-bold text-[16px] text-bouton sm:text-[26px]">Tchopamor</a>
-            <ion-icon name="menu" class="sm:hidden">Menu</ion-icon>
-            <div class=" hidden sm:w-20 sm:flex sm:items-center sm:justify-between">
-                <button
-                    class="w-[73px] h-[30px] bg-bouton text-[12px]  rounded-[5px] font-inter text-white text-center hover:bg-black">Connexion</button>
-                <button
-                    class="w-[73px] h-[30px] bg-bouton  text-[12px] rounded-[5px] font-inter text-white text-center hover:bg-black">S'inscrire</button>
-            </div>
+<body class="w-screen overflow-hidden  flex flex-col gap-2">
+    <header class="fixed top-0 w-full h-[30px] md:h-[60px] bg-[#EDEDED] flex items-center justify-between px-3 z-50">
+        <a href="#" class="font-bold text-[16px] sm:text-[26px] text-bouton">Tchopamor</a>
+        <ion-icon name="menu" class="sm:hidden">Menu</ion-icon>
+        <div class="hidden md:h-[60px] sm:flex sm:items-center sm:justify-between space-x-2">
+            <button
+                class="w-[73px] h-[30px] bg-bouton text-white text-[12px] rounded-[5px] font-inter hover:bg-orange-700 transition-transform hover:translate-y-0.5">Connexion</button>
+            <button
+                class="w-[73px] h-[30px] bg-bouton text-white text-[12px] rounded-[5px] font-inter hover:bg-orange-700 transition-transform hover:translate-y-0.5">S'inscrire</button>
         </div>
     </header>
-    <main class="w-full h-full px-3">
+
+    <main class="pt-[60px]">
+        <!-- Contenu de la page ici -->
+    </main>
+
+    <main class="w-full h-full px-3 flex flex-col md:gap-2 lg:gap-6">
         <section class="w-full h-auto ">
             <h1 class="font-normal text-[.6rem] font-inter text-center sm:text-[1.5rem] sm:py-2">Bienvenue sur Tchopamor
             </h1>
@@ -52,22 +54,22 @@
                 simples mais toujours pleines de gout.</p>
             <p class=" text-[.3rem] text-center pt-2 font-inter sm:text-[.7rem]">Entrer, goutez,
                 et laissez la gourmandise vous guider</p>
-            <div class="w-full flex justify-center py-2">
+            <div class="w-full flex justify-center py-2 mt-4">
                 <button
-                    class="text-white text-[12px]  bg-bouton rounded-[7px] w-17 h-3 font-inter sm:w-25 sm:h-5 sm:text-[16px] hover:bg-black">Decouvrir
+                    class="text-white text-[12px]  bg-bouton rounded-[7px] w-17 h-3 font-inter transition-transform hover:translate-y-0.5  sm:w-25 sm:h-5 sm:text-[16px] hover:hover:bg-orange-700">Decouvrir
                     les
                     saveurs
                 </button>
             </div>
         </section>
-        <section class="w-full h-auto pt-3 bg-transparent">
-            <h3 class="text-bouton text-[16px] font-inter indent-4 sm:text-[30px]" text-center>Retrouver aussi les
+        <section >
+            <h3 class="text-bouton text-[16px] font-inter indent-4 sm:text-[30px] text-center ">Retrouver aussi les
                 recettes de tous vos plats camerounais.</h3>
 
             <!-- Conteneur principal avec scroll horizontal -->
-            <div class="overflow-x-auto scroll-smooth">
+            <div class="overflow-x-auto scroll-smooth w-screen">
                 <!-- Liste des plats en ligne -->
-                <div class="flex whitespace-nowrap gap-4 py-3 px-4">
+                <div class="flex whitespace-nowrap scroll-ml-1 gap-4 py-3 px-4">
 
                     <!-- Eru -->
                     <div class="w-40 flex-shrink-0 flex flex-col items-center">
@@ -134,19 +136,21 @@
                 </div>
             </div>
 
-            <div class="w-full py-2 flex justify-center ">
+            <div class="w-full h-8 flex justify-center items-center ">
                 <button
-                    class="w-[73px] h-[30px] bg-bouton text-[12px]  rounded-[5px] font-inter text-white text-center hover:bg-black">
+                    class="  text-[14px] w-[100px] h-[20px] md:w-[200px] md:h-[40px] bg-bouton md:text-[18px] transition-transform hover:translate-y-0.5  rounded-[5px] font-inter text-white text-center hover:bg-orange-700">
                     Je cuisine ! </button>
             </div>
         </section>
     </main>
-    <footer class="w-full h-[200px] bg-apbar ">
-        <a href="#" class="font-bold text-[16px] text-bouton sm:text-[26px] leading-tight py-2">Tchopamor</a>
-        <br><a href="#" class="text-white text-[7px] sm:text-[10px] leading-tight py-2">Conditions d’utilisation</a>
-        <br><a href="#" class="text-white text-[7px] sm:text-[10px] leading-tight  py-2">Politique De
+
+
+    <footer class="w-full h-[100px] lg:h-[200px] bg-apbar flex flex-col items-center justify-center gap-1 lg:mt-8">
+        <a href="#" class="font-bold text-[16px] text-bouton md:text-[26px] mb-2">Tchopamor</a>
+        <a href="#" class="text-white text-[7px] md:text-[10px]">Conditions d’utilisation</a>
+        <a href="#" class="text-white text-[7px] md:text-[10px] ">Politique De
             Confidentialité</a>
-        <br><a href="#" class="text-white text-[7px] sm:text-[10px] leading-tight py-2">© 2025 Tchopamor. Tout droits
+        <a href="#" class="text-white text-[7px] md:text-[10px]  ">© 2025 Tchopamor. Tout droits
             reservés.</a>
 
     </footer>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link rel="icon" href="./img/logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="./css/index.css">
+    <script src="./assets/js/index.js"></script>
+    <title>ThopIA</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+                        --color-bouton:#BA5E0D;
+                                    --font-inter:"Inter", sans-serif;
+
+              }
+            </style>
+
+</head>
+
+<body class="w-screen">
+
+    <header class="w-full p-3 flex items-center justify-between sm:justify-around">
+        <p class="font-semibold text-[20px] font-inter flex">
+            <img src="./img/logo ia.jpg" alt="logo nourriture" class="w-3 rounded ">TchopIA
+        </p>
+        <ion-icon name="menu" class="sm:hidden">Menu</ion-icon>
+        <div class="sm:h-[50px] hidden sm:flex flex-row justify-around items-center ">
+            <a href="#" class="text-[16px] hover:underline hover:text-bouton px-3 font-inter">Accueil</a>
+            <a href="" class="text-[16px] hover:underline hover:text-bouton px-3 font-inter">Générateur IA</a>
+            <a href="" class="text-[16px] hover:underline hover:text-bouton px-3 font-inter">Contact</a>
+        </div>
+    </header> 
+
+    <main class="w-full">
+        <a href="../index.html" class=""><ion-icon name="arrow-back-sharp">retour</ion-icon></a>
+
+        <section class="w-full pt-10 sm:h-auto">
+            <h3 class="font-inter text-semibold text-[26px] text-center mt-[70px] sm:text-[50px]">Comment puis-je vous
+                aider ?</h3>
+            <div class="flex justify-around pt-5">
+                <a href="./genere.html"
+                    class="font-inter text-center border rounded-[16px] text-[12px] bg-orange-100 p-1">Générer vos
+                    recettes</a>
+                <a href="./decouvre.html"
+                    class="font-inter text-center border rounded-[16px] text-[12px] bg-orange-100 p-1">Découvrir vos
+                    plats</a>
+            </div>
+            <a href="./conseil.html"
+                class="font-inter text-center border rounded-[16px] text-[12px] bg-orange-100 p-1 ml-[9rem]">Conseils</a>
+        </section>
+        <div class="relative pt-10 ">
+            <input type="text" placeholder="Que voulez-vous manger ?"
+                class="font-inter text-center border rounded-[25px] text-[16px] bg-transparent p-1 w-[350px] text-left ">
+            <ion-icon name="search-sharp" class="absolute pt-2 -ml-5">recherche</ion-icon>
+
+        </div>
+    </main>
+</body>
+
+</html>

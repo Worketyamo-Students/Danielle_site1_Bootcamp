@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +8,7 @@
     <link rel="icon" href="./img/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="./css/index.css">
     <script src="./js/index.js"></script>
-    <title>ThopIA</title>
+    <title>Ma cuisine</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style type="text/tailwindcss">
         @theme {
@@ -19,9 +18,9 @@
                   }
                 </style>
 </head>
-
 <body class="w-screen">
-    <header class="w-full h-[30px] md:h-[60px] bg-[#EDEDED] flex items-center justify-between px-3 z-50">
+    
+    <header class=" w-full h-[30px] sm:h-[60px] bg-[#EDEDED] flex items-center justify-between px-3 z-50">
         <a href="#" class="font-bold text-[16px] sm:text-[26px] text-bouton">Tchopamor</a>
         <ion-icon name="menu" class="sm:hidden">Menu</ion-icon>
         <div class="hidden md:h-[60px] sm:flex sm:items-center sm:justify-between space-x-2">
@@ -31,24 +30,25 @@
                 class="w-[73px] h-[30px] bg-bouton text-white text-[12px] rounded-[5px] font-inter hover:bg-orange-700 transition-transform hover:translate-y-0.5">S'inscrire</button>
         </div>
     </header>
-    <div class="w-full flex">
-        <img src="./img/bird1-2.jpg" alt="photo" class="w-20 rounded">
-        <p class="text[12px] font-inter font-semibold">NGONO <br> DANIELLE</p>
-        </div>
-        <p class="text-[20px] font-inter pt-7 pb-3 px-3"> Salut! Moi c'est Danielle. Débutante en <strong>devellopement web
-                front-end.</strong></p>
+
+    <a href="../index.html" class=""><ion-icon name="arrow-back-sharp">retour</ion-icon></a>
+    <div class="relative pt-10 pb-5">
+        <input type="text" placeholder="Entrer le nom de votre plat"
+            class="font-inter text-center border rounded-[25px] text-[16px] bg-transparent p-1 w-[350px] text-left ">
+        <ion-icon name="search-sharp" class="absolute pt-2 -ml-5">recherche</ion-icon>
     
-    <p class="text-[16px] font-inter">Pour me contacter, tape sur :</p>
-   <div class="w-full flex flex-col">
-    <a href="mailto:estellend9@gmail.com" class="text-[16px] font-inter">-Mon E-mail</a>
-    <a href="telto:+237 655 32 70 83" class="text-[16px] font-inter pb-2">-Mon contact</a>
-    <ion-icon name="logo-whatsapp"></ion-icon>
-    <p class="text-[12px] font-inter pb-2">Wathsapp</p>
-    <ion-icon name="logo-facebook">Facebook</ion-icon>
-        <p class="text-[12px] font-inter pb-2">Facebook</p>
-    <ion-icon name="logo-github">Github</ion-icon>
-        <p class="text-[12px] font-inter">Github</p>
+    </div>
+    <div class="w-full flex items-center pl-3 pb-3">
+    <img src="./img/images.jpeg" alt="photo nourriture" class="w-20 rounded">
+    <a href="#" class="text-[20px] font-inter pl-3 hover:text-bouton">Ndolè</a>
+    </div>
+    <div class="w-full flex items-center pl-3 pb-3">
+        <img src="./img/okok.webp" alt="photo nourriture" class="w-20 rounded">
+        <a href="#" class="text-[20px] font-inter pl-3 hover:text-bouton">Okok</a>
+    </div>
+    <div class="w-full flex items-center pl-3 pb-3">
+        <img src="./img/sauce-jaune.jpeg" alt="photo nourriture" class="w-20 rounded">
+        <a href="#" class="text-[20px] font-inter pl-3 hover:text-bouton">Sauce Jaune</a>
     </div>
 </body>
-
 </html>

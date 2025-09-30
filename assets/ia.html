@@ -9,6 +9,7 @@
     <link rel="icon" href="./img/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="./css/index.css">
     <script src="./js/index.js"></script>
+    <script src="./js/tchopia-ai.js"></script>
     <title>ThopIA</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style type="text/tailwindcss">
@@ -18,6 +19,45 @@
 
               }
             </style>
+    
+    <style>
+        /* Responsive input styling */
+        #recipe-input {
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(186, 94, 13, 0.1);
+        }
+        
+        #recipe-input:focus {
+            box-shadow: 0 4px 20px rgba(186, 94, 13, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .prose {
+            line-height: 1.6;
+        }
+        
+        /* Loading animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            #recipe-input {
+                width: 95% !important;
+                font-size: 14px;
+            }
+            
+            .bg-white.rounded-lg {
+                margin: 0 1rem;
+            }
+        }
+    </style>
 
 </head>
 
@@ -52,12 +92,97 @@
             <a href="./conseil.html"
                 class="font-inter text-center border rounded-[16px] text-[12px] bg-orange-100 p-1 ml-[9rem]">Conseils</a>
         </section>
-        <div class="relative pt-10 ">
-            <input type="text" placeholder="Que voulez-vous manger ?"
-                class="font-inter text-center border rounded-[25px] text-[16px] bg-transparent p-1 w-[350px] text-left ">
-            <ion-icon name="search-sharp" class="absolute pt-2 -ml-5">recherche</ion-icon>
-
+        
+        <div class="relative pt-16 mb-8 text-center">
+            <form id="recipe-form" class="relative flex justify-center">
+                <input 
+                    type="text" 
+                    id="recipe-input"
+                    placeholder="Décrivez les ingrédients que vous avez ou le goût/odeur du plat désiré..." 
+                    class="font-inter text-center border rounded-[25px] text-[16px] bg-transparent p-4 w-[90%] max-w-[500px] text-left focus:outline-none focus:ring-2 focus:ring-bouton shadow-lg"
+                    required
+                >
+                <button 
+                    type="submit" 
+                    id="search-btn"
+                    class="absolute right-[5%] top-1/2 transform -translate-y-1/2 text-bouton hover:scale-110 transition-transform"
+                >
+                    <ion-icon name="search-sharp" class="text-xl"></ion-icon>
+                </button>
+            </form>
+            
+            <!-- Loading State -->
+            <div id="loading-state" class="hidden mt-6 text-center">
+                <div class="inline-flex items-center space-x-2">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-bouton"></div>
+                    <span class="font-inter text-bouton">🤔 ChefIA analyse vos ingrédients...</span>
+                </div>
+            </div>
+            
+            <!-- AI Response Container -->
+            <div id="recipe-response" class="hidden mt-8 max-w-4xl mx-auto">
+                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-bouton">
+                    <div class="flex items-center mb-4">
+                        <img src="./img/logo ia.jpg" alt="ChefIA" class="w-8 h-8 rounded-full mr-3">
+                        <h3 class="font-inter font-semibold text-lg text-bouton">Recette personnalisée de ChefIA</h3>
+                    </div>
+                    <div id="recipe-content" class="prose prose-orange max-w-none">
+                        <!-- AI response will be inserted here -->
+                    </div>
+                
+                <!-- Action Buttons -->
+                <div id="recipe-actions" class="hidden flex flex-wrap gap-3 mt-6 pt-4 border-t border-gray-200">
+                    <button id="save-recipe" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        💾 Sauvegarder
+                    </button>
+                    <button id="share-recipe" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        📤 Partager
+                    </button>
+                    <button id="new-query" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                        � Nouvelle Question
+                    </button>
+                    <button id="cooking-tips" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                        💡 Conseils Extra
+                    </button>
+                </div>
+            </div>
+                        <button id="new-query" class="bg-bouton text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+                            🔄 Nouvelle Recette
+                        </button>
+                        <button id="cooking-tips" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                            💡 Plus d'Astuces
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Error State -->
+            <div id="error-state" class="hidden mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-center">
+                    <ion-icon name="alert-circle" class="text-red-500 mr-2"></ion-icon>
+                    <span class="font-inter text-red-700" id="error-message">Une erreur s'est produite</span>
+                </div>
+            </div>
         </div>
+
+        <!-- Enhanced Features Section -->
+        <section class="mt-12 px-4">
+            <h4 class="font-inter text-center text-xl font-semibold text-bouton mb-6">🧠 Capacités de ChefIA</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                    <h5 class="font-semibold text-bouton mb-2">🇨🇲 Expert Camerounais</h5>
+                    <p class="text-sm">Spécialisé dans les plats traditionnels : Ndolè, Okok, Eru, Poisson braisé...</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <h5 class="font-semibold text-green-700 mb-2">🧠 IA Avancée</h5>
+                    <p class="text-sm">Powered by Grok-2 pour des recettes créatives et authentiques</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h5 class="font-semibold text-blue-700 mb-2">📚 Mémoire RAG</h5>
+                    <p class="text-sm">Base de connaissances qui s'enrichit avec chaque interaction</p>
+                </div>
+            </div>
+        </section>
     </main>
 </body>
 

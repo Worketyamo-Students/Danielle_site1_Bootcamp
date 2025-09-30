@@ -1,0 +1,22 @@
+{
+  "n8n": {
+    "base_url": "http://localhost:5678",
+    "webhook_path": "/webhook/24ccdc71-4b9c-43dc-b203-8d7569b24910",
+    "request_fields": {
+      "request_type": "Request Type",
+      "meal_name": "Meal Name",
+      "ingredients": "Available Ingredients",
+      "dietary_restrictions": "Dietary Restrictions",
+      "servings": "Number of Servings"
+    },
+    "request_type_values": {
+      "meal": "I want to cook a specific meal",
+      "ingredients": "I have ingredients to use"
+    }
+  },
+  "defaults": {
+    "servings": 4,
+    "dietary_restrictions": "",
+    "timeout_ms": 45000
+  }
+}

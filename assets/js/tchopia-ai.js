@@ -21,22 +21,13 @@ class TchopIA {
                     base_url: 'http://localhost:5678',
                     webhook_path: '/webhook/24ccdc71-4b9c-43dc-b203-8d7569b24910',
                     request_fields: {
-                        request_type: 'Request Type',
-                        meal_name: 'Meal Name',
                         ingredients: 'Available Ingredients',
+                        meal_name: 'Meal Name',
                         dietary_restrictions: 'Dietary Restrictions',
                         servings: 'Number of Servings'
-                    },
-                    request_type_values: {
-                        meal: 'I want to cook a specific meal',
-                        ingredients: 'I have ingredients to use'
                     }
                 },
-                defaults: { servings: 4, dietary_restrictions: '', timeout_ms: 45000 },
-                detection: {
-                    ingredient_keywords: ["tomate", "oignon", "ail", "huile", "sel", "poivre", "viande", "poisson", "riz", "plantain"],
-                    separators: [",", "et", "&", "+", ";"]
-                }
+                defaults: { servings: 4, dietary_restrictions: '', timeout_ms: 45000 }
             };
         }
         this.webhookUrl = `${this.config.n8n.base_url}${this.config.n8n.webhook_path}`;
@@ -56,17 +47,20 @@ class TchopIA {
 
     bindEvents() {
         const form = document.getElementById('recipe-form');
-        const input = document.getElementById('recipe-input');
+        const ingredientsInput = document.getElementById('ingredients-input');
+        const dishInput = document.getElementById('dish-input');
         const newQueryBtn = document.getElementById('new-query');
         const saveBtn = document.getElementById('save-recipe');
         const shareBtn = document.getElementById('share-recipe');
+        const cookingTipsBtn = document.getElementById('cooking-tips');
 
         if (form) {
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const query = input.value.trim();
-                if (query) {
-                    this.processRecipeRequest(query);
+                const ingredients = ingredientsInput.value.trim();
+                const dishName = dishInput.value.trim();
+                if (ingredients && dishName) {
+                    this.processRecipeRequest(ingredients, dishName);
                 }
             });
         }
@@ -83,26 +77,27 @@ class TchopIA {
             shareBtn.addEventListener('click', () => this.shareRecipe());
         }
 
+        if (cookingTipsBtn) {
+            cookingTipsBtn.addEventListener('click', () => this.getCookingTips());
+        }
+
         // Auto-suggestions for common Cameronian dishes
-        input?.addEventListener('input', (e) => {
+        dishInput?.addEventListener('input', (e) => {
             this.showSuggestions(e.target.value);
         });
     }
 
-    async processRecipeRequest(query) {
+    async processRecipeRequest(ingredients, dishName) {
         this.showLoading(true);
         this.hideError();
         try {
-            const isIngredientList = this.detectIngredientList(query);
-            const f = this.config.n8n.request_fields || this.config.n8n.request_fields || this.config.n8n.request_fields; // redundancy safe
-            const values = this.config.n8n.request_type_values;
+            const f = this.config.n8n.request_fields;
             const defaults = this.config.defaults;
             const requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
             const payload = {
-                [f.request_type]: isIngredientList ? values.ingredients : values.meal,
-                [f.meal_name]: isIngredientList ? '' : query,
-                [f.ingredients]: isIngredientList ? query : '',
+                [f.ingredients]: ingredients,
+                [f.meal_name]: dishName,
                 [f.dietary_restrictions]: defaults.dietary_restrictions,
                 [f.servings]: defaults.servings,
                 request_id: requestId
@@ -122,8 +117,8 @@ class TchopIA {
             const recipe = this.extractRecipeFromResponse(data);
             if (recipe) {
                 this.displayRecipe(recipe.markdown || this.composeMarkdown(recipe));
-                this.currentRecipe = { recipe: recipe.markdown || this.composeMarkdown(recipe), meta: recipe, requestId };
-                this.saveToLocalHistory(query, recipe);
+                this.currentRecipe = { recipe: recipe.markdown || this.composeMarkdown(recipe), meta: recipe, requestId, ingredients, dishName };
+                this.saveToLocalHistory(`${dishName} avec ${ingredients}`, recipe);
             } else {
                 this.showError('Réponse inattendue du service IA');
             }
@@ -159,15 +154,7 @@ class TchopIA {
 
     // Removed checkForWebhookResponse (legacy async pattern)
 
-    detectIngredientList(query) {
-        if (!this.config) return false;
-        const detection = this.config.detection || this.config.frontend_config?.detection_logic;
-        if (!detection) return false;
-        const lowerQuery = query.toLowerCase();
-        const hasSeparators = (detection.separators || []).some(sep => lowerQuery.includes(sep));
-        const hasIngredientKeywords = (detection.ingredient_keywords || []).some(k => lowerQuery.includes(k.toLowerCase()));
-        return hasSeparators && hasIngredientKeywords;
-    }
+    // Removed ingredient detection logic (not needed with explicit form fields)
 
     // Removed form submission intermediary (direct webhook usage)
 
@@ -177,68 +164,7 @@ class TchopIA {
 
     // Removed polling fallback (simplified flow)
 
-    async simulateRecipeGeneration(query, isIngredientList) {
-        // Simulation d'attente pour le traitement
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        const mockRecipe = this.generateMockRecipe(query, isIngredientList);
-        
-        this.showLoading(false);
-        this.displayRecipe(mockRecipe);
-        this.saveToLocalHistory(query, { recipe: mockRecipe, timestamp: new Date().toISOString() });
-    }
-
-    generateMockRecipe(query, isIngredientList) {
-        if (isIngredientList) {
-            return `# 🍽️ Recette suggérée avec vos ingrédients
-
-## 📝 Analyse de vos ingrédients
-Vous avez mentionné: **${query}**
-
-## 🍲 Plat suggéré: Sauce Camerounaise
-Basé sur vos ingrédients disponibles, je vous propose cette délicieuse sauce traditionnelle.
-
-### 🛒 Ingrédients nécessaires
-- ${query.split(/[,;+&]/).map(ing => `**${ing.trim()}**`).join('\n- ')}
-- Cubes Maggi (si disponible)
-- Huile de palme ou huile végétale
-
-### 👨‍🍳 Instructions
-1. **Préparation** (10 min): Épluchez et coupez tous les légumes
-2. **Cuisson** (25 min): Faites revenir dans l'huile chaude
-3. **Assaisonnement**: Ajoutez les épices et laissez mijoter
-4. **Finalisation**: Goûtez et ajustez l'assaisonnement
-
-### 💡 Conseils du Chef
-- Laissez mijoter à feu doux pour développer les saveurs
-- Servez avec du riz, plantain ou igname
-
-*Recette générée par ChefIA basée sur vos ingrédients disponibles* ✨`;
-        } else {
-            return `# 🍽️ ${query.charAt(0).toUpperCase() + query.slice(1)}
-
-## 📝 Description
-${query} est un plat délicieux de la cuisine camerounaise qui ravira vos papilles.
-
-### 🛒 Ingrédients (pour 4 personnes)
-- Ingrédient principal selon votre demande
-- Épices traditionnelles camerounaises
-- Légumes frais de saison
-- Huile de palme ou végétale
-
-### 👨‍🍳 Préparation
-1. **Préparation** (15 min): Préparez tous vos ingrédients
-2. **Cuisson** (30 min): Suivez la méthode traditionnelle
-3. **Assaisonnement**: Ajustez selon votre goût
-4. **Dressage**: Servez chaud avec accompagnement
-
-### 💡 Astuces de Chef
-- Respectez les temps de cuisson pour préserver les saveurs
-- N'hésitez pas à adapter selon vos préférences
-
-*Recette personnalisée par ChefIA* 🇨🇲✨`;
-        }
-    }
+    // Removed simulation methods (using real n8n workflow now)
 
     displayRecipe(recipeMarkdown) {
         const responseDiv = document.getElementById('recipe-response');
@@ -316,12 +242,12 @@ ${query} est un plat délicieux de la cuisine camerounaise qui ravira vos papill
             dropdown = document.createElement('div');
             dropdown.id = 'suggestions-dropdown';
             dropdown.className = 'absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg shadow-lg z-50 mt-1';
-            document.getElementById('recipe-form').appendChild(dropdown);
+            document.getElementById('dish-input').parentElement.appendChild(dropdown);
         }
 
         if (suggestions.length > 0) {
             dropdown.innerHTML = suggestions.map(suggestion => 
-                `<div class="p-2 hover:bg-orange-50 cursor-pointer border-b last:border-b-0" onclick="document.getElementById('recipe-input').value = '${suggestion}'; this.parentElement.style.display = 'none';">
+                `<div class="p-2 hover:bg-orange-50 cursor-pointer border-b last:border-b-0" onclick="document.getElementById('dish-input').value = '${suggestion}'; this.parentElement.style.display = 'none';">
                     ${suggestion}
                 </div>`
             ).join('');
@@ -461,10 +387,12 @@ ${query} est un plat délicieux de la cuisine camerounaise qui ravira vos papill
     }
 
     resetInterface() {
-        const input = document.getElementById('recipe-input');
+        const ingredientsInput = document.getElementById('ingredients-input');
+        const dishInput = document.getElementById('dish-input');
         const responseDiv = document.getElementById('recipe-response');
         
-        if (input) input.value = '';
+        if (ingredientsInput) ingredientsInput.value = '';
+        if (dishInput) dishInput.value = '';
         if (responseDiv) responseDiv.classList.add('hidden');
         
         this.hideError();

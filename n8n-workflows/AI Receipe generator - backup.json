@@ -1,0 +1,683 @@
+{
+  "name": "AI Receipe generator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "24ccdc71-4b9c-43dc-b203-8d7569b24910",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "bba17fe3-1b2c-4bd6-84a7-2bb66fa38d5b",
+      "name": "Webhook Trigger1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        640,
+        5104
+      ],
+      "webhookId": "24ccdc71-4b9c-43dc-b203-8d7569b24910"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "ingredients",
+              "value": "={{$json.body[\"Available Ingredients\"]}}"
+            },
+            {
+              "name": "dish_name", 
+              "value": "={{$json.body[\"Meal Name\"]}}"
+            },
+            {
+              "name": "dietary_restrictions",
+              "value": "={{$json.body[\"Dietary Restrictions\"] || \"\"}}"
+            },
+            {
+              "name": "servings",
+              "value": "={{$json.body[\"Number of Servings\"] || 4}}"
+            },
+            {
+              "name": "request_id",
+              "value": "={{$json.body[\"request_id\"] || $now}}"
+            },
+            {
+              "name": "user_input",
+              "value": "Plat: {{$json.body[\"Meal Name\"]}} avec ingrédients: {{$json.body[\"Available Ingredients\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "55f85292-4b89-4a23-91f1-11abd748d230",
+      "name": "Extract Input1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        752,
+        5104
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"Request Type\"]}}",
+              "value2": "I want to cook a specific meal"
+            }
+          ]
+        }
+      },
+      "id": "f161820b-94b8-4b2e-b949-287ef1ee01fa",
+      "name": "Route Request Type1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        864,
+        5104
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "2dea753c-50e7-466f-be19-c6692cfb7442",
+      "name": "Prepare Meal Request1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        1088,
+        4992
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "cbf4bfb1-3cf2-4294-b0af-e1ca29c8ed86",
+      "name": "Prepare Ingredients Request1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        1088,
+        5200
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "58c09932-d9e0-463d-bb80-2a1b629f1278",
+      "name": "Merge Paths1",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        5104
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XcLzXeB7hUWD_0hagnIsvEQ-qX4fXwnvD_wk_A3omW4",
+          "mode": "list",
+          "cachedResultName": "RecipeHistory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XcLzXeB7hUWD_0hagnIsvEQ-qX4fXwnvD_wk_A3omW4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XcLzXeB7hUWD_0hagnIsvEQ-qX4fXwnvD_wk_A3omW4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{$json[\"request_id\"]}}",
+            "RequestType": "={{$json[\"request_type\"]}}",
+            "UserInput": "={{$json[\"user_input\"]}}",
+            "DietaryRestrictions": "={{$json[\"dietary_restrictions\"]}}",
+            "Servings": "={{$json[\"servings\"]}}",
+            "Status": "Processing"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RequestType",
+              "displayName": "RequestType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UserInput",
+              "displayName": "UserInput",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DietaryRestrictions",
+              "displayName": "DietaryRestrictions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Servings",
+              "displayName": "Servings",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8768de49-97b8-407a-b49b-c8834c4450d6",
+      "name": "Log Request to Sheets1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1536,
+        5104
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Z0U2LzskiYYrUMDj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "ai_prompt",
+              "value": "=Créez une recette complète de {{$json.dish_name}} avec les ingrédients disponibles: {{$json.ingredients}}. \n\nInstructions:\n- Créez un titre accrocheur\n- Listez tous les ingrédients nécessaires (en plus de ceux fournis)\n- Donnez les étapes détaillées de préparation\n- Adaptez pour {{$json.servings}} personnes\n- Tenez compte des restrictions: {{$json.dietary_restrictions}}\n- Ajoutez des conseils de chef camerounais\n\nFormat: Markdown avec émojis"
+            },
+            {
+              "name": "context_metadata",
+              "value": "={\n  \"request_type\": \"recipe_generation\",\n  \"cuisine\": \"camerounaise\",\n  \"timestamp\": \"{{$now}}\",\n  \"request_id\": \"{{$json.request_id}}\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ba7753a1-8e5b-4ca5-8f10-fe639b95bd3c",
+      "name": "Build AI Prompt1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        1760,
+        5104
+      ]
+    },
+    {
+      "parameters": {
+        "text": "={{$json.ai_prompt}}",
+        "options": {
+          "systemMessage": "Tu es ChefIA, un expert culinaire camerounais. Crée des recettes détaillées et authentiques de la cuisine camerounaise. Inclus le titre, la liste des ingrédients, les étapes de préparation détaillées et des conseils de chef. Utilise un format markdown avec des émojis pour rendre la recette attrayante."
+        }
+      },
+      "id": "5d7f26ce-e94a-4e60-8afd-55335095d5e6",
+      "name": "AI Agent1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        4992
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "recipe_title",
+              "value": "=Recette {{$json.dish_name}} - ChefIA"
+            },
+            {
+              "name": "recipe_content",
+              "value": "={{$json.text || $json.output || $json.response}}"
+            },
+            {
+              "name": "generated_at",
+              "value": "={{$now}}"
+            },
+            {
+              "name": "ingredients_used",
+              "value": "={{$json.ingredients}}"
+            },
+            {
+              "name": "dish_requested",
+              "value": "={{$json.dish_name}}"
+            },
+            {
+              "name": "servings",
+              "value": "={{$json.servings}}"
+            },
+            {
+              "name": "request_id",
+              "value": "={{$json.request_id}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aad56721-ecf2-498d-89bc-c2161c415129",
+      "name": "Format Recipe Output1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        2208,
+        5104
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XcLzXeB7hUWD_0hagnIsvEQ-qX4fXwnvD_wk_A3omW4",
+          "mode": "list",
+          "cachedResultName": "RecipeHistory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XcLzXeB7hUWD_0hagnIsvEQ-qX4fXwnvD_wk_A3omW4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XcLzXeB7hUWD_0hagnIsvEQ-qX4fXwnvD_wk_A3omW4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "ee19fa48-255d-4aa5-b36e-9e93b68634f7",
+      "name": "Save Recipe to Sheets1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2432,
+        4992
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Z0U2LzskiYYrUMDj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "id": "9febbd37-2739-41f8-9b62-b70271e33ebc",
+      "name": "Save Recipe to Drive1",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2432,
+        5216
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "6Cp1CAOubF70F8t1",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "8eb81f95-5739-49e0-b677-76eafa0a8fa4",
+      "name": "Merge Storage Results1",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [
+        2656,
+        5104
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1XcLzXeB7hUWD_0hagnIsvEQ-qX4fXwnvD_wk_A3omW4",
+          "mode": "list",
+          "cachedResultName": "RecipeHistory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XcLzXeB7hUWD_0hagnIsvEQ-qX4fXwnvD_wk_A3omW4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XcLzXeB7hUWD_0hagnIsvEQ-qX4fXwnvD_wk_A3omW4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Completed"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "237c227b-115c-433b-b0f7-b528426183d6",
+      "name": "Update Request Status1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2880,
+        5104
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Z0U2LzskiYYrUMDj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "success",
+              "value": "true"
+            },
+            {
+              "name": "message",
+              "value": "Recette générée avec succès"
+            }
+          ],
+          "object": [
+            {
+              "name": "final_response",
+              "value": "={\n  \"recipe_title\": \"{{$json.recipe_title}}\",\n  \"recipe_content\": \"{{$json.recipe_content}}\",\n  \"generated_at\": \"{{$json.generated_at}}\",\n  \"request_id\": \"{{$json.request_id}}\",\n  \"dish_name\": \"{{$json.dish_requested}}\",\n  \"ingredients\": \"{{$json.ingredients_used}}\",\n  \"servings\": {{$json.servings}},\n  \"processing_time\": \"{{$executionTime}}ms\",\n  \"ai_model\": \"OpenRouter GPT-OSS\",\n  \"specialization\": \"Cuisine Camerounaise\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d376f936-88e0-4b08-a491-d4e14bfd17a8",
+      "name": "Prepare User Response1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        3072,
+        5104
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "options": {}
+      },
+      "id": "5e0ddf30-7235-4d2d-8929-b8e278fc7cb7",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        3296,
+        5104
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b:free",
+        "options": {
+          "maxTokens": 2000,
+          "temperature": 0.7
+        }
+      },
+      "id": "53c1be4c-dba0-435f-8271-664cbf480688",
+      "name": "ChatGPT OSS1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1888,
+        5296
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "mJYBEjoa3bYekCHO",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook Trigger1": [
+      {
+        "json": {
+          "headers": {
+            "host": "localhost:5678",
+            "connection": "keep-alive",
+            "content-length": "194",
+            "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
+            "accept": "application/json",
+            "content-type": "application/json",
+            "origin": "http://127.0.0.1:5500",
+            "sec-fetch-site": "cross-site",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+            "referer": "http://127.0.0.1:5500/",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "Request Type": "I want to cook a specific meal",
+            "Meal Name": "rice and stew",
+            "Available Ingredients": "",
+            "Dietary Restrictions": "",
+            "Number of Servings": 4,
+            "request_id": "req_1759238489852_f7iqpv9"
+          },
+          "webhookUrl": "http://localhost:5678/webhook/24ccdc71-4b9c-43dc-b203-8d7569b24910",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Extract Input1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Input1": {
+      "main": [
+        [
+          {
+            "node": "Log Request to Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    "Log Request to Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Build AI Prompt1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build AI Prompt1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Format Recipe Output1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Recipe Output1": {
+      "main": [
+        [
+          {
+            "node": "Save Recipe to Sheets1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Recipe to Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Recipe to Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Merge Storage Results1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Recipe to Drive1": {
+      "main": [
+        [
+          {
+            "node": "Merge Storage Results1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Storage Results1": {
+      "main": [
+        [
+          {
+            "node": "Update Request Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Request Status1": {
+      "main": [
+        [
+          {
+            "node": "Prepare User Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare User Response1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChatGPT OSS1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "867c275e-890a-4512-a38c-9752c6e892dc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "93ace94098d9f9dd844138bcf4397e622c6ea8d222af8db31040119d08e72bcf"
+  },
+  "id": "StM5PXiEZvjWDdGE",
+  "tags": []
+}

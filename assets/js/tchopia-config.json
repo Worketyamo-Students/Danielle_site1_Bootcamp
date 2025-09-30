@@ -3,15 +3,27 @@
     "base_url": "http://localhost:5678",
     "webhook_path": "/webhook/24ccdc71-4b9c-43dc-b203-8d7569b24910",
     "request_fields": {
-      "ingredients": "Available Ingredients",
-      "meal_name": "Meal Name",
-      "dietary_restrictions": "Dietary Restrictions",
-      "servings": "Number of Servings"
+      "ingredients": "ingredients",
+      "meal_name": "dish_name",
+      "servings": "servings"
     }
   },
   "defaults": {
-    "servings": 4,
-    "dietary_restrictions": "",
-    "timeout_ms": 45000
-  }
+    "timeout_ms": 45000,
+    "servings": 4
+  },
+  "cameroon_dishes": [
+    "Ndolé",
+    "Okok",
+    "Eru", 
+    "Sauce jaune",
+    "Poisson braisé",
+    "Koki",
+    "Sauce gombo",
+    "Achu",
+    "Mbongo tchobi",
+    "Pepper soup",
+    "Fufu",
+    "Beignets"
+  ]
 }

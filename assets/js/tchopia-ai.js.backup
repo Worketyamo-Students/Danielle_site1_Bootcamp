@@ -21,9 +21,8 @@ class TchopIA {
                     base_url: 'http://localhost:5678',
                     webhook_path: '/webhook/24ccdc71-4b9c-43dc-b203-8d7569b24910',
                     request_fields: {
-                        ingredients: 'ingredients',
-                        meal_name: 'dish_name',
-                        servings: 'servings'
+                        ingredients: 'Available Ingredients',
+                        meal_name: 'Meal Name',
                     }
                 },
                 defaults: { timeout_ms: 45000 }
@@ -104,6 +103,7 @@ class TchopIA {
             const payload = {
                 [f.ingredients]: ingredients,
                 [f.meal_name]: dishName,
+                [f.dietary_restrictions]: defaults.dietary_restrictions || "",
                 [f.servings]: defaults.servings || 4,
                 request_id: requestId
             };
@@ -420,3 +420,87 @@ class TchopIA {
     }
 
     showToast(message, type = 'info', duration = 3000) {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transition-all duration-300 ${
+            type === 'success' ? 'bg-green-500 text-white' :
+            type === 'error' ? 'bg-red-500 text-white' :
+            'bg-blue-500 text-white'
+        }`;
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+
+    showLoading(show) {
+        const loadingDiv = document.getElementById('loading-state');
+        const responseDiv = document.getElementById('recipe-response');
+        
+        if (loadingDiv) {
+            if (show) {
+                loadingDiv.classList.remove('hidden');
+                responseDiv?.classList.add('hidden');
+            } else {
+                loadingDiv.classList.add('hidden');
+            }
+        }
+    }
+
+    showError(message) {
+        const errorDiv = document.getElementById('error-state');
+        const errorMsg = document.getElementById('error-message');
+        
+        if (errorDiv && errorMsg) {
+            errorMsg.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+    }
+
+    hideError() {
+        const errorDiv = document.getElementById('error-state');
+        if (errorDiv) {
+            errorDiv.classList.add('hidden');
+        }
+    }
+
+    resetInterface() {
+        const ingredientsInput = document.getElementById('ingredients-input');
+        const dishInput = document.getElementById('dish-input');
+        const responseDiv = document.getElementById('recipe-response');
+        
+        if (ingredientsInput) ingredientsInput.value = '';
+        if (dishInput) dishInput.value = '';
+        if (responseDiv) responseDiv.classList.add('hidden');
+        
+        this.hideError();
+        this.currentRecipe = null;
+    }
+
+    setupMarkdownRenderer() {
+        // Enhanced markdown rendering setup
+        console.log('📝 Markdown renderer initialized');
+    }
+}
+
+// Initialize TchopIA when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Only initialize on the IA page
+    if (document.getElementById('recipe-form')) {
+        window.tchopIA = new TchopIA();
+    }
+});
+
+// Legacy functions for backward compatibility
+function initializeInterface() {
+    console.log('🔄 Legacy interface initialization');
+}
+
+// Export for module usage
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = TchopIA;
+}

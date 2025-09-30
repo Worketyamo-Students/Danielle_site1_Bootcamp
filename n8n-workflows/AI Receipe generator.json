@@ -21,27 +21,23 @@
           "string": [
             {
               "name": "ingredients",
-              "value": "={{$json.body[\"Available Ingredients\"]}}"
+              "value": "={{$json.body.ingredients || $json.body[\"Available Ingredients\"]}}"
             },
             {
               "name": "dish_name", 
-              "value": "={{$json.body[\"Meal Name\"]}}"
-            },
-            {
-              "name": "dietary_restrictions",
-              "value": "={{$json.body[\"Dietary Restrictions\"] || \"\"}}"
+              "value": "={{$json.body.dish_name || $json.body[\"Meal Name\"]}}"
             },
             {
               "name": "servings",
-              "value": "={{$json.body[\"Number of Servings\"] || 4}}"
+              "value": "={{$json.body.servings || $json.body[\"Number of Servings\"] || 4}}"
             },
             {
               "name": "request_id",
-              "value": "={{$json.body[\"request_id\"] || $now}}"
+              "value": "={{$json.body.request_id || $now}}"
             },
             {
               "name": "user_input",
-              "value": "Plat: {{$json.body[\"Meal Name\"]}} avec ingrédients: {{$json.body[\"Available Ingredients\"]}}"
+              "value": "Plat: {{$json.body.dish_name || $json.body[\"Meal Name\"]}} avec ingrédients: {{$json.body.ingredients || $json.body[\"Available Ingredients\"]}}"
             }
           ]
         },
@@ -78,7 +74,6 @@
             "UserInput": "={{$json[\"user_input\"]}}",
             "DishName": "={{$json[\"dish_name\"]}}",
             "Ingredients": "={{$json[\"ingredients\"]}}",
-            "DietaryRestrictions": "={{$json[\"dietary_restrictions\"]}}",
             "Servings": "={{$json[\"servings\"]}}",
             "Status": "Processing"
           }
@@ -103,7 +98,7 @@
           "string": [
             {
               "name": "ai_prompt",
-              "value": "=Créez une recette complète de {{$json.dish_name}} avec les ingrédients disponibles: {{$json.ingredients}}. \n\nInstructions:\n- Créez un titre accrocheur\n- Listez tous les ingrédients nécessaires (en plus de ceux fournis)\n- Donnez les étapes détaillées de préparation\n- Adaptez pour {{$json.servings}} personnes\n- Tenez compte des restrictions: {{$json.dietary_restrictions}}\n- Ajoutez des conseils de chef camerounais\n\nFormat: Markdown avec émojis"
+              "value": "=Tu es ChefIA, un expert culinaire spécialisé dans la cuisine camerounaise authentique. \n\nCrée une recette complète et détaillée pour: **{{$json.dish_name}}** \nAvec les ingrédients disponibles: {{$json.ingredients}}\n\nSTRUCTURE REQUISE:\n\n## 🍽️ {{$json.dish_name}} - Recette Authentique\n\n### 📋 Ingrédients (pour {{$json.servings}} personnes)\n[Liste complète avec quantités précises]\n\n### ⏱️ Temps de préparation\n- Préparation: X minutes\n- Cuisson: X minutes  \n- Total: X minutes\n\n### 👨‍🍳 Instructions étape par étape\n1. **Préparation des ingrédients**\n   [Détails précis]\n\n2. **Cuisson**\n   [Étapes détaillées avec temps et températures]\n\n3. **Finition**\n   [Dernières étapes]\n\n### 💡 Conseils du Chef Camerounais\n- [3-4 conseils pratiques spécifiques]\n\n### 🌶️ Variantes et accompagnements\n- [Suggestions de variations]\n- [Accompagnements traditionnels]\n\nUTILISE des émojis appropriés et assure-toi que la recette soit authentiquement camerounaise avec des techniques traditionnelles."
             }
           ]
         },
@@ -119,9 +114,9 @@
       "parameters": {
         "text": "={{$json.ai_prompt}}",
         "options": {
-          "systemMessage": "Tu es ChefIA, un expert culinaire camerounais. Crée des recettes détaillées et authentiques de la cuisine camerounaise. Inclus le titre, la liste des ingrédients, les étapes de préparation détaillées et des conseils de chef. Utilise un format markdown avec des émojis pour rendre la recette attrayante.",
-          "maxTokens": 2000,
-          "temperature": 0.7
+          "systemMessage": "Tu es ChefIA, un chef cuisinier expert en cuisine camerounaise traditionnelle et moderne. Tu connais parfaitement:\n\n- Les techniques de cuisson camerounaises (braisage, fumage, cuisson à l'étouffée)\n- Les ingrédients locaux (feuilles de manioc, gombo, crevettes séchées, poisson fumé, huile de palme)\n- Les plats emblématiques (Ndolé, Okok, Eru, Sauce jaune, Poisson braisé, Koki)\n- Les accompagnements traditionnels (plantain, igname, macabo, riz)\n- Les épices et assaisonnements camerounais\n\nRéponds UNIQUEMENT en français avec un style chaleureux et authentique. Crée des recettes détaillées, structurées et faciles à suivre. Utilise des émojis pour rendre tes réponses attrayantes. Inclus toujours des conseils pratiques et des astuces de chef.",
+          "maxTokens": 2500,
+          "temperature": 0.8
         }
       },
       "id": "5d7f26ce-e94a-4e60-8afd-55335095d5e6",
@@ -233,8 +228,8 @@
           ],
           "object": [
             {
-              "name": "final_response",
-              "value": "={\n  \"recipe_title\": \"{{$json.recipe_title}}\",\n  \"recipe_content\": \"{{$json.recipe_content}}\",\n  \"generated_at\": \"{{$json.generated_at}}\",\n  \"request_id\": \"{{$json.request_id}}\",\n  \"dish_name\": \"{{$json.dish_requested}}\",\n  \"ingredients\": \"{{$json.ingredients_used}}\",\n  \"servings\": {{$json.servings}},\n  \"processing_time\": \"{{$executionTime}}ms\",\n  \"ai_model\": \"OpenRouter GPT-OSS\",\n  \"specialization\": \"Cuisine Camerounaise\"\n}"
+              "name": "data",
+              "value": "={\n  \"success\": true,\n  \"message\": \"Recette générée avec succès par ChefIA\",\n  \"recipe\": {\n    \"title\": \"{{$json.recipe_title}}\",\n    \"content\": \"{{$json.recipe_content}}\",\n    \"generated_at\": \"{{$json.generated_at}}\",\n    \"request_id\": \"{{$json.request_id}}\",\n    \"dish_name\": \"{{$json.dish_requested}}\",\n    \"ingredients\": \"{{$json.ingredients_used}}\",\n    \"servings\": {{$json.servings}},\n    \"processing_time\": \"{{$executionTime}}ms\",\n    \"chef\": \"ChefIA - Expert Cuisine Camerounaise\"\n  },\n  \"metadata\": {\n    \"session_id\": \"{{$json.request_id}}\",\n    \"cuisine_type\": \"Camerounaise\",\n    \"ai_model\": \"OpenRouter GPT-OSS\",\n    \"timestamp\": \"{{$now}}\"\n  }\n}"
             }
           ]
         },

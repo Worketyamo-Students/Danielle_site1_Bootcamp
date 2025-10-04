@@ -9,6 +9,7 @@
     <link rel="icon" href="./img/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="./css/index.css">
     <script src="./js/index.js"></script>
+    <script src="./js/tchopia-ai-simple.js"></script>
     <title>ThopIA</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style type="text/tailwindcss">
@@ -18,46 +19,202 @@
 
               }
             </style>
+    
+    <style>
+        /* Responsive input styling */
+        #recipe-input {
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(186, 94, 13, 0.1);
+        }
+        
+        #recipe-input:focus {
+            box-shadow: 0 4px 20px rgba(186, 94, 13, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .prose {
+            line-height: 1.6;
+        }
+        
+        /* Loading animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            #recipe-input {
+                width: 95% !important;
+                font-size: 14px;
+            }
+            
+            .bg-white.rounded-lg {
+                margin: 0 1rem;
+            }
+        }
+    </style>
 
 </head>
 
 <body class="w-screen">
 
-    <header class="w-full p-3 flex items-center justify-between sm:justify-around">
-        <p class="font-semibold text-[20px] font-inter flex">
-            <img src="./img/logo ia.jpg" alt="logo nourriture" class="w-3 rounded ">TchopIA
-        </p>
-        <ion-icon name="menu" class="sm:hidden">Menu</ion-icon>
-        <div class="sm:h-[50px] hidden sm:flex  justify-around sm:items-center ">
-            <a href="#" class="text-[16px] hover:underline hover:text-bouton px-3 font-inter">Accueil</a>
-            <a href="./genere.html" class="text-[16px] hover:underline hover:text-bouton px-3 font-inter">Générateur IA</a>
-            <a href="./contact.html" class="text-[16px] hover:underline hover:text-bouton px-3 font-inter">Contact</a>
+    <header class="w-full p-3 sm:p-4 md:p-6 flex items-center justify-between">
+        <div class="flex items-center">
+            <img src="./img/logo ia.jpg" alt="logo nourriture" class="w-6 h-6 sm:w-8 sm:h-8 rounded mr-2">
+            <p class="font-semibold text-[18px] sm:text-[20px] md:text-[24px] font-inter">TchopIA</p>
         </div>
+        
+        <!-- Mobile menu button -->
+        <button id="mobile-menu-btn" class="sm:hidden">
+            <ion-icon name="menu" class="text-[24px]"></ion-icon>
+        </button>
+        
+        <!-- Desktop navigation -->
+        <nav class="hidden sm:flex items-center space-x-4 md:space-x-6">
+            <a href="../index.html" class="text-[14px] md:text-[16px] hover:underline hover:text-bouton font-inter transition-colors duration-200">Accueil</a>
+            <a href="./genere.html" class="text-[14px] md:text-[16px] hover:underline hover:text-bouton font-inter transition-colors duration-200">Générateur IA</a>
+            <a href="./contact.html" class="text-[14px] md:text-[16px] hover:underline hover:text-bouton font-inter transition-colors duration-200">Contact</a>
+        </nav>
+        
+        <!-- Mobile navigation menu (hidden by default) -->
+        <nav id="mobile-menu" class="hidden sm:hidden absolute top-full left-0 w-full bg-white shadow-lg z-50">
+            <div class="flex flex-col p-4 space-y-3">
+                <a href="../index.html" class="text-[16px] hover:text-bouton font-inter transition-colors duration-200">Accueil</a>
+                <a href="./genere.html" class="text-[16px] hover:text-bouton font-inter transition-colors duration-200">Générateur IA</a>
+                <a href="./contact.html" class="text-[16px] hover:text-bouton font-inter transition-colors duration-200">Contact</a>
+            </div>
+        </nav>
     </header> 
 
-    <main class="w-full">
-        <a href="../index.html" class=""><ion-icon name="arrow-back-sharp">retour</ion-icon></a>
-
-        <section class="w-full pt-10">
-            <h3 class="font-inter text-semibold text-[26px] text-center mt-[70px] sm:text-[50px]">Comment puis-je vous
-                aider ?</h3>
-            <div class="flex justify-around pt-5">
-                <a href="./genere.html"
-                    class="font-inter text-center border rounded-[16px] text-[12px] bg-orange-100 p-1">Générer vos
-                    recettes</a>
-                <a href="./decouvre.html"
-                    class="font-inter text-center border rounded-[16px] text-[12px] bg-orange-100 p-1">Découvrir vos
-                    plats</a>
-            </div>
-            <a href="./conseil.html"
-                class="font-inter text-center border rounded-[16px] text-[12px] bg-orange-100 p-1 ml-[9rem]">Conseils</a>
-        </section>
-        <div class="relative pt-10 ">
-            <input type="text" placeholder="Que voulez-vous manger ?"
-                class="font-inter text-center border rounded-[25px] text-[16px] bg-transparent p-1 w-[350px] text-left ">
-            <ion-icon name="search-sharp" class="absolute pt-2 -ml-5">recherche</ion-icon>
-
+    <main class="w-full px-4 sm:px-6 md:px-8">
+        <div class="mb-4">
+            <a href="../index.html" class="inline-flex items-center text-bouton hover:text-orange-700 transition-colors duration-200">
+                <ion-icon name="arrow-back-sharp" class="mr-2"></ion-icon>
+                <span class="text-[14px] sm:text-[16px]">Retour</span>
+            </a>
         </div>
+
+        <section class="w-full pt-6 sm:pt-8 md:pt-10">
+            <h3 class="font-inter font-semibold text-[20px] sm:text-[26px] md:text-[36px] lg:text-[50px] text-center mb-6 md:mb-8">
+                Comment puis-je vous aider ?
+            </h3>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 md:gap-6 mb-4">
+                <a href="./genere.html"
+                    class="font-inter text-center border rounded-[16px] text-[12px] sm:text-[14px] bg-orange-100 hover:bg-orange-200 p-2 sm:p-3 transition-colors duration-200">
+                    Générer vos recettes
+                </a>
+                <a href="./decouvre.html"
+                    class="font-inter text-center border rounded-[16px] text-[12px] sm:text-[14px] bg-orange-100 hover:bg-orange-200 p-2 sm:p-3 transition-colors duration-200">
+                    Découvrir vos plats
+                </a>
+            </div>
+            
+            <div class="flex justify-center">
+                <a href="./conseil.html"
+                    class="font-inter text-center border rounded-[16px] text-[12px] sm:text-[14px] bg-orange-100 hover:bg-orange-200 p-2 sm:p-3 transition-colors duration-200">
+                    Conseils
+                </a>
+            </div>
+        </section>
+        
+        <div class="relative pt-8 md:pt-16 mb-8 text-center">
+            <h3 class="font-inter font-semibold text-[20px] sm:text-[26px] md:text-[32px] lg:text-[40px] text-center mb-6 md:mb-8">
+                Générateur de Recettes ChefIA
+            </h3>
+            
+            <form id="recipe-form" class="max-w-2xl mx-auto space-y-4 md:space-y-6">
+                <!-- Ingredients Input -->
+                <div class="relative">
+                    <label for="ingredients-input" class="block text-left font-inter font-medium text-gray-700 mb-2 text-[14px] sm:text-[16px]">
+                        🥬 Entrez vos ingrédients
+                    </label>
+                    <input 
+                        type="text" 
+                        id="ingredients-input"
+                        name="ingredients"
+                        placeholder="Ex: tomate, oignon, poisson, riz, huile de palme..." 
+                        class="font-inter border rounded-[25px] text-[14px] sm:text-[16px] bg-transparent p-3 md:p-4 w-full focus:outline-none focus:ring-2 focus:ring-bouton shadow-lg transition-all duration-200"
+                        required
+                    >
+                </div>
+
+                <!-- Dish Name Input -->
+                <div class="relative">
+                    <label for="dish-input" class="block text-left font-inter font-medium text-gray-700 mb-2 text-[14px] sm:text-[16px]">
+                        🍽️ Entrez le nom du plat
+                    </label>
+                    <input 
+                        type="text" 
+                        id="dish-input"
+                        name="dish_name"
+                        placeholder="Ex: Ndolè, Okok, Poisson braisé, Sauce jaune..." 
+                        class="font-inter border rounded-[25px] text-[14px] sm:text-[16px] bg-transparent p-3 md:p-4 w-full focus:outline-none focus:ring-2 focus:ring-bouton shadow-lg transition-all duration-200"
+                        required
+                    >
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit" 
+                    id="generate-recipe-btn"
+                    class="w-full bg-bouton text-white font-inter font-semibold py-3 md:py-4 px-6 md:px-8 rounded-[25px] text-[16px] md:text-[18px] hover:bg-orange-700 transition-all hover:scale-[1.02] shadow-lg"
+                >
+                    🔥 Générer ma recette
+                </button>
+            </form>
+            
+            <!-- Loading State -->
+            <div id="loading-state" class="hidden mt-6 text-center">
+                <div class="inline-flex items-center space-x-2">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-bouton"></div>
+                    <span class="font-inter text-bouton">🤔 ChefIA analyse vos ingrédients...</span>
+                </div>
+            </div>
+            
+            <!-- AI Response Container -->
+            <div id="recipe-response" class="hidden mt-8 max-w-4xl mx-auto">
+                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-bouton">
+                    <div class="flex items-center mb-4">
+                        <img src="./img/logo ia.jpg" alt="ChefIA" class="w-8 h-8 rounded-full mr-3">
+                        <h3 class="font-inter font-semibold text-lg text-bouton">Recette personnalisée de ChefIA</h3>
+                    </div>
+                    <div id="recipe-content" class="prose prose-orange max-w-none">
+                        <!-- AI response will be inserted here -->
+                    </div>
+                
+                <!-- Action Buttons -->
+                <div id="recipe-actions" class="flex flex-wrap gap-3 mt-6 pt-4 border-t border-gray-200">
+                    <button id="save-recipe" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        💾 Sauvegarder
+                    </button>
+                    <button id="share-recipe" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        📤 Partager
+                    </button>
+                    <button id="new-query" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                        � Nouvelle Question
+                    </button>
+                    <button id="cooking-tips" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                        💡 Conseils Extra
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Error State -->
+            <div id="error-state" class="hidden mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-center">
+                    <ion-icon name="alert-circle" class="text-red-500 mr-2"></ion-icon>
+                    <span class="font-inter text-red-700" id="error-message">Une erreur s'est produite</span>
+                </div>
+            </div>
+        </div>
+
+
     </main>
 </body>
 

@@ -9,46 +9,116 @@
     <link rel="icon" href="./img/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="./css/index.css">
     <script src="./js/index.js"></script>
-    <title>ThopIA</title>
+    <title>Contact - TchopIA</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style type="text/tailwindcss">
         @theme {
-                            --color-bouton:#BA5E0D;
-                                        --font-inter:"Inter", sans-serif;
-    
-                  }
-                </style>
+            --color-bouton:#BA5E0D;
+            --font-inter:"Inter", sans-serif;
+        }
+    </style>
 </head>
 
-<body class="w-screen">
-    <header class="w-full h-[30px] md:h-[60px] bg-[#EDEDED] flex items-center justify-between px-3 z-50">
-        <a href="#" class="font-bold text-[16px] sm:text-[26px] text-bouton">Tchopamor</a>
-        <ion-icon name="menu" class="sm:hidden">Menu</ion-icon>
-        <div class="hidden md:h-[60px] sm:flex sm:items-center sm:justify-between space-x-2">
-            <button
-                class="w-[73px] h-[30px] bg-bouton text-white text-[12px] rounded-[5px] font-inter hover:bg-orange-700 transition-transform hover:translate-y-0.5">Connexion</button>
-            <button
-                class="w-[73px] h-[30px] bg-bouton text-white text-[12px] rounded-[5px] font-inter hover:bg-orange-700 transition-transform hover:translate-y-0.5">S'inscrire</button>
+<body class="w-full min-h-screen bg-gray-50">
+    <header class="w-full h-[50px] sm:h-[60px] md:h-[70px] bg-[#EDEDED] flex items-center justify-between px-4 sm:px-6 md:px-8 shadow-sm">
+        <a href="../index.html" class="font-bold text-[18px] sm:text-[22px] md:text-[26px] text-bouton hover:text-orange-700 transition-colors duration-200">
+            Tchopamor
+        </a>
+        
+        <!-- Mobile menu button -->
+        <button class="sm:hidden">
+            <ion-icon name="menu" class="text-[24px]"></ion-icon>
+        </button>
+        
+        <!-- Desktop buttons -->
+        <div class="hidden sm:flex items-center space-x-3 md:space-x-4 overflow-hidden">
+            <button class="px-4 py-2 md:px-6 md:py-2 bg-bouton text-white text-[12px] md:text-[14px] rounded-[5px] font-inter hover:bg-orange-700 transition-all duration-200 hover:scale-[1.02]">
+                Connexion
+            </button>
+            <button class="px-4 py-2 md:px-6 md:py-2 bg-bouton text-white text-[12px] md:text-[14px] rounded-[5px] font-inter hover:bg-orange-700 transition-all duration-200 hover:scale-[1.02]">
+                S'inscrire
+            </button>
         </div>
     </header>
-    <div class="w-full flex">
-        <img src="./img/bird1-2.jpg" alt="photo" class="w-20 rounded">
-        <p class="text[12px] font-inter font-semibold">NGONO <br> DANIELLE</p>
+
+    <main class="w-full px-4 sm:px-6 md:px-8 py-6">
+        <div class="max-w-2xl mx-auto">
+            <!-- Back button -->
+            <div class="mb-6">
+                <a href="../index.html" class="inline-flex items-center text-bouton hover:text-orange-700 transition-colors duration-200">
+                    <ion-icon name="arrow-back-sharp" class="mr-2"></ion-icon>
+                    <span class="text-[14px] sm:text-[16px]">Retour</span>
+                </a>
+            </div>
+
+            <!-- Profile section -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex items-center mb-4">
+                    <img src="./img/bird1-2.jpg" alt="Danielle Ngono" class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full object-cover mr-4 shadow-md">
+                    <div>
+                        <h2 class="text-[16px] sm:text-[18px] md:text-[20px] font-inter font-semibold text-gray-800">
+                            NGONO DANIELLE
+                        </h2>
+                        <p class="text-[12px] sm:text-[14px] text-gray-600 font-inter">Développeuse Web Front-end</p>
+                    </div>
+                </div>
+                
+                <p class="text-[14px] sm:text-[16px] md:text-[18px] font-inter text-gray-700 leading-relaxed">
+                    Salut! Moi c'est Danielle. Débutante en <strong>développement web front-end.</strong>
+                    Passionnée par la création d'interfaces utilisateur modernes et responsives.
+                </p>
+            </div>
+
+            <!-- Contact section -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-[16px] sm:text-[18px] md:text-[20px] font-inter font-semibold text-gray-800 mb-4">
+                    Pour me contacter :
+                </h3>
+                
+                <div class="space-y-4">
+                    <!-- Email -->
+                    <div class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                        <ion-icon name="mail" class="text-bouton text-[20px] mr-3"></ion-icon>
+                        <a href="mailto:estellend9@gmail.com" class="text-[14px] sm:text-[16px] font-inter text-gray-700 hover:text-bouton transition-colors duration-200">
+                            estellend9@gmail.com
+                        </a>
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                        <ion-icon name="call" class="text-bouton text-[20px] mr-3"></ion-icon>
+                        <a href="tel:+237655327083" class="text-[14px] sm:text-[16px] font-inter text-gray-700 hover:text-bouton transition-colors duration-200">
+                            +237 655 32 70 83
+                        </a>
+                    </div>
+
+                    <!-- Social links -->
+                    <div class="pt-4">
+                        <h4 class="text-[14px] sm:text-[16px] font-inter font-medium text-gray-800 mb-3">Suivez-moi sur :</h4>
+                        <div class="flex space-x-4">
+                            <!-- WhatsApp -->
+                            <a href="#" class="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-200 group overflow-hidden">
+                                <ion-icon name="logo-whatsapp" class="text-green-600 text-[24px] mr-2 group-hover:scale-[1.05] transition-transform duration-200"></ion-icon>
+                                <span class="text-[12px] sm:text-[14px] font-inter text-green-700">WhatsApp</span>
+                            </a>
+
+                            <!-- Facebook -->
+                            <a href="#" class="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200 group overflow-hidden">
+                                <ion-icon name="logo-facebook" class="text-blue-600 text-[24px] mr-2 group-hover:scale-[1.05] transition-transform duration-200"></ion-icon>
+                                <span class="text-[12px] sm:text-[14px] font-inter text-blue-700">Facebook</span>
+                            </a>
+
+                            <!-- GitHub -->
+                            <a href="#" class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 group overflow-hidden">
+                                <ion-icon name="logo-github" class="text-gray-800 text-[24px] mr-2 group-hover:scale-[1.05] transition-transform duration-200"></ion-icon>
+                                <span class="text-[12px] sm:text-[14px] font-inter text-gray-700">GitHub</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <p class="text-[20px] font-inter pt-7 pb-3 px-3"> Salut! Moi c'est Danielle. Débutante en <strong>devellopement web
-                front-end.</strong></p>
-    
-    <p class="text-[16px] font-inter">Pour me contacter, tape sur :</p>
-   <div class="w-full flex flex-col">
-    <a href="mailto:estellend9@gmail.com" class="text-[16px] font-inter">-Mon E-mail</a>
-    <a href="telto:+237 655 32 70 83" class="text-[16px] font-inter pb-2">-Mon contact</a>
-    <ion-icon name="logo-whatsapp"></ion-icon>
-    <p class="text-[12px] font-inter pb-2">Wathsapp</p>
-    <ion-icon name="logo-facebook">Facebook</ion-icon>
-        <p class="text-[12px] font-inter pb-2">Facebook</p>
-    <ion-icon name="logo-github">Github</ion-icon>
-        <p class="text-[12px] font-inter">Github</p>
-    </div>
+    </main>
 </body>
 
 </html>

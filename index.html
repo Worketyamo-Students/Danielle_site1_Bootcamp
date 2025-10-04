@@ -4,7 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script type="m    <footer class="w-full py-6 sm:py-8 md:py-12 bg-apbar">
+        <div class="flex flex-col items-center justify-center gap-3 sm:gap-4 px-4">
+            <a href="#" class="font-bold text-[18px] sm:text-[22px] md:text-[28px] text-bouton hover:text-orange-600 transition-colors duration-200">
+                Tchopamor
+            </a>
+            
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-6 items-center">
+                <a href="#" class="text-white text-[10px] sm:text-[12px] md:text-[14px] hover:text-gray-300 transition-colors duration-200">
+                    Conditions d'utilisation
+                </a>
+                <a href="#" class="text-white text-[10px] sm:text-[12px] md:text-[14px] hover:text-gray-300 transition-colors duration-200">
+                    Politique De Confidentialité
+                </a>
+                <a href="#" class="text-white text-[10px] sm:text-[12px] md:text-[14px] hover:text-gray-300 transition-colors duration-200">
+                    © 2025 Tchopamor. Tous droits réservés.
+                </a>
+            </div>
+            
+            <div class="flex gap-4 mt-2">
+                <ion-icon name="logo-whatsapp" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white hover:text-green-400 transition-colors duration-200 cursor-pointer"></ion-icon>
+                <ion-icon name="logo-facebook" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white hover:text-blue-400 transition-colors duration-200 cursor-pointer"></ion-icon>
+                <ion-icon name="logo-github" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white hover:text-gray-400 transition-colors duration-200 cursor-pointer"></ion-icon>
+            </div>
+        </div>
+    </footer>tps://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <link rel="icon" href="./assets/img/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="./assets/css/index.css">
@@ -23,118 +47,138 @@
             --color-regard:#D32F2F;
             --font-inter:"Inter", sans-serif;
           }
+          
+          /* Custom scrollbar styling */
+          .scrollbar-hide {
+            -ms-overflow-style: none;  /* Internet Explorer 10+ */
+            scrollbar-width: none;  /* Firefox */
+          }
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;  /* Safari and Chrome */
+          }
+          
+          /* Responsive text scaling */
+          @media (max-width: 360px) {
+            .text-xs-mobile { font-size: 0.6rem; }
+            .text-sm-mobile { font-size: 0.75rem; }
+          }
         </style>
 </head>
 
-<body class="w-screen overflow-hidden  flex flex-col gap-2">
-    <header class="fixed top-0 w-full h-[30px] md:h-[60px] bg-[#EDEDED] flex items-center justify-between px-3 z-50">
-        <a href="#" class="font-bold text-[16px] sm:text-[26px] text-bouton">Tchopamor</a>
-        <ion-icon name="menu" class="sm:hidden">Menu</ion-icon>
-        <div class="hidden md:h-[60px] sm:flex sm:items-center sm:justify-between space-x-2">
+<body class="w-full min-h-screen flex flex-col">
+    <header class="fixed top-0 w-full h-[50px] md:h-[70px] bg-[#EDEDED] flex items-center justify-between px-4 md:px-6 z-50 shadow-sm overflow-hidden">
+        <a href="#" class="font-bold text-[18px] sm:text-[22px] md:text-[28px] text-bouton">Tchopamor</a>
+        <ion-icon name="menu" class="text-2xl sm:hidden text-bouton">Menu</ion-icon>
+        <div class="hidden sm:flex items-center space-x-3">
             <button
-                class="w-[73px] h-[30px] bg-bouton text-white text-[12px] rounded-[5px] font-inter hover:bg-orange-700 transition-transform hover:translate-y-0.5">Connexion</button>
+                class="px-4 py-2 bg-bouton text-white text-[12px] md:text-[14px] rounded-[5px] font-inter hover:bg-orange-700 transition-all duration-200 hover:scale-[1.02]">Connexion</button>
             <button
-                class="w-[73px] h-[30px] bg-bouton text-white text-[12px] rounded-[5px] font-inter hover:bg-orange-700 transition-transform hover:translate-y-0.5">S'inscrire</button>
+                class="px-4 py-2 bg-bouton text-white text-[12px] md:text-[14px] rounded-[5px] font-inter hover:bg-orange-700 transition-all duration-200 hover:scale-[1.02]">S'inscrire</button>
         </div>
     </header>
 
-    <main class="w-full h-full px-3 flex flex-col md:gap-2 lg:gap-6">
-        <section class="w-full h-auto ">
-            <h1 class="font-normal text-[.6rem] font-inter text-center sm:text-[1.5rem] sm:py-2">Bienvenue sur Tchopamor
+        <main class="flex-1 pt-[50px] md:pt-[70px] px-4 md:px-6 lg:px-8 flex flex-col gap-6 md:gap-8">
+        <section class="w-full py-6 md:py-8">
+            <h1 class="font-normal text-[1rem] sm:text-[1.5rem] md:text-[2rem] lg:text-[2.5rem] font-inter text-center mb-4">
+                Bienvenue sur Tchopamor
             </h1>
-            <p class="font-light text-[.3rem] text-bien text-center indent-[1.5rem] font-inter sm:text-[.7rem]">Ici,
-                chaque plat
-                raconte une histoire. Notre site vous
-                ouvre les portes d’un voyage culinaire où les recettes sont plus que de simples instructions.
-                Peu importe qui vous etes, vous trouverez ici des trésors de recettes inspirées d’origine variées,
-                simples mais toujours pleines de gout.</p>
-            <p class=" text-[.3rem] text-center pt-2 font-inter sm:text-[.7rem]">Entrer, goutez,
-                et laissez la gourmandise vous guider</p>
-            <div class="w-full flex justify-center py-2 mt-4">
+            <div class="max-w-4xl mx-auto space-y-4">
+                <p class="font-light text-[0.8rem] sm:text-[1rem] md:text-[1.1rem] text-bien text-center leading-relaxed font-inter px-4">
+                    Ici, chaque plat raconte une histoire. Notre site vous ouvre les portes d'un voyage culinaire où les recettes sont plus que de simples instructions.
+                    Peu importe qui vous êtes, vous trouverez ici des trésors de recettes inspirées d'origine variées, simples mais toujours pleines de goût.
+                </p>
+                <p class="text-[0.8rem] sm:text-[1rem] md:text-[1.1rem] text-center font-inter text-gray-600">
+                    Entrez, goûtez, et laissez la gourmandise vous guider
+                </p>
+            </div>
+            <div class="w-full flex justify-center mt-6 hover:overflow-hidden">
                 <a href="./assets/ia.html"
-                    class="text-white text-[12px]  bg-bouton rounded-[7px] w-17 h-3 font-inter transition-transform hover:translate-y-0.5  sm:w-25 sm:h-5 sm:text-[16px] text-center py-1 hover:bg-orange-700">Decouvrir
-                    les saveurs
+                    class="text-white text-[14px] sm:text-[16px] md:text-[18px] bg-bouton rounded-[8px] px-6 py-3 md:px-8 md:py-4 font-inter transition-all duration-200 hover:bg-orange-700 hover:scale-[1.02] hover:overflow-hidden shadow-lg">
+                    Découvrir les saveurs
                 </a>
             </div>
         </section>
-        <section >
-            <h3 class="text-bouton text-[16px] font-inter indent-4 sm:text-[30px] text-center ">Retrouver aussi les
-                recettes de tous vos plats camerounais.</h3>
+        <section class="w-full py-6">
+            <h3 class="text-bouton text-[18px] sm:text-[24px] md:text-[30px] font-inter text-center mb-6">
+                Retrouvez aussi les recettes de tous vos plats camerounais.
+            </h3>
 
             <!-- Conteneur principal avec scroll horizontal -->
-            <div class="overflow-x-auto scroll-smooth w-screen">
+            <div class="overflow-x-auto overflow-y-hidden scroll-smooth w-full scrollbar-hide">
                 <!-- Liste des plats en ligne -->
-                <div class="flex whitespace-nowrap scroll-ml-1 gap-4 py-3 px-4">
+                <div class="flex whitespace-nowrap gap-4 py-3 px-4 min-w-max">
 
                     <!-- Eru -->
-                    <div class="w-40 flex-shrink-0 flex flex-col items-center">
-                        <a href="#">
+                    <div class="w-32 sm:w-40 md:w-44 flex-shrink-0 flex flex-col items-center overflow-hidden">
+                        <a href="#" class="block overflow-hidden rounded-lg">
                             <img src="./assets/img/Le_Eru,_un_plat_camerounais.jpg" alt="Eru"
-                                class="w-30 h-auto sm:w-40 sm:h-30 rounded" />
+                                class="w-28 h-20 sm:w-36 sm:h-24 md:w-40 md:h-28 rounded-lg object-cover hover:scale-[1.02] transition-all duration-200 shadow-md" />
                         </a>
-                        <p class="text-[12px] sm:text-[20px]">Eru</p>
+                        <p class="text-[12px] sm:text-[14px] md:text-[16px] mt-2 text-center font-inter">Eru</p>
                     </div>
 
                     <!-- Okok -->
-                    <div class="w-40 flex-shrink-0 flex flex-col items-center">
-                        <a href="#">
-                            <img src="./assets/img/okok.webp" alt="Okok" class="w-30 h-auto sm:w-40 sm:h-30 rounded" />
+                    <div class="w-32 sm:w-40 md:w-44 flex-shrink-0 flex flex-col items-center overflow-hidden">
+                        <a href="#" class="block overflow-hidden rounded-lg">
+                            <img src="./assets/img/okok.webp" alt="Okok" 
+                                class="w-28 h-20 sm:w-36 sm:h-24 md:w-40 md:h-28 rounded-lg object-cover hover:scale-[1.02] transition-all duration-200 shadow-md" />
                         </a>
-                        <p class="text-[12px] sm:text-[20px]">Okok</p>
+                        <p class="text-[12px] sm:text-[14px] md:text-[16px] mt-2 text-center font-inter">Okok</p>
                     </div>
 
                     <!-- Poisson braisé -->
-                    <div class="w-40 flex-shrink-0 flex flex-col items-center">
-                        <a href="#">
+                    <div class="w-32 sm:w-40 md:w-44 flex-shrink-0 flex flex-col items-center overflow-hidden">
+                        <a href="#" class="block overflow-hidden rounded-lg">
                             <img src="./assets/img/Poisson-Braise-Cameroun.jpg" alt="Poisson braisé"
-                                class="w-30 h-auto sm:w-40 sm:h-30 rounded" />
+                                class="w-28 h-20 sm:w-36 sm:h-24 md:w-40 md:h-28 rounded-lg object-cover hover:scale-[1.02] transition-all duration-200 shadow-md" />
                         </a>
-                        <p class="text-[12px] sm:text-[20px]">Poisson braisé</p>
+                        <p class="text-[12px] sm:text-[14px] md:text-[16px] mt-2 text-center font-inter">Poisson braisé</p>
                     </div>
 
                     <!-- Ndolè -->
-                    <div class="w-40 flex-shrink-0 flex flex-col items-center">
-                        <a href="#">
+                    <div class="w-32 sm:w-40 md:w-44 flex-shrink-0 flex flex-col items-center overflow-hidden">
+                        <a href="#" class="block overflow-hidden rounded-lg">
                             <img src="./assets/img/images.jpeg" alt="Ndolè"
-                                class="w-30 h-auto sm:w-40 sm:h-30 rounded" />
+                                class="w-28 h-20 sm:w-36 sm:h-24 md:w-40 md:h-28 rounded-lg object-cover hover:scale-[1.02] transition-all duration-200 shadow-md" />
                         </a>
-                        <p class="text-[12px] sm:text-[20px]">Ndolè</p>
+                        <p class="text-[12px] sm:text-[14px] md:text-[16px] mt-2 text-center font-inter">Ndolè</p>
                     </div>
 
                     <!-- Banane Malaxée -->
-                    <div class="w-40 flex-shrink-0 flex flex-col items-center">
-                        <a href="#">
+                    <div class="w-32 sm:w-40 md:w-44 flex-shrink-0 flex flex-col items-center overflow-hidden">
+                        <a href="#" class="block overflow-hidden rounded-lg">
                             <img src="./assets/img/banane.jpeg" alt="Banane Malaxée"
-                                class="w-30 h-auto sm:w-40 sm:h-30 rounded" />
+                                class="w-28 h-20 sm:w-36 sm:h-24 md:w-40 md:h-28 rounded-lg object-cover hover:scale-[1.02] transition-all duration-200 shadow-md" />
                         </a>
-                        <p class="text-[12px] sm:text-[20px]">Banane Malaxée</p>
+                        <p class="text-[12px] sm:text-[14px] md:text-[16px] mt-2 text-center font-inter">Banane Malaxée</p>
                     </div>
 
                     <!-- Sauce Gombo -->
-                    <div class="w-40 flex-shrink-0 flex flex-col items-center">
-                        <a href="#">
+                    <div class="w-32 sm:w-40 md:w-44 flex-shrink-0 flex flex-col items-center overflow-hidden">
+                        <a href="#" class="block overflow-hidden rounded-lg">
                             <img src="./assets/img/foufou-et-sauce-gombo.jpg" alt="Sauce Gombo"
-                                class="w-30 h-auto sm:w-40 sm:h-30 rounded" />
+                                class="w-28 h-20 sm:w-36 sm:h-24 md:w-40 md:h-28 rounded-lg object-cover hover:scale-[1.02] transition-all duration-200 shadow-md" />
                         </a>
-                        <p class="text-[12px] sm:text-[20px]">Sauce Gombo</p>
+                        <p class="text-[12px] sm:text-[14px] md:text-[16px] mt-2 text-center font-inter">Sauce Gombo</p>
                     </div>
 
                     <!-- Sauce Jaune -->
-                    <div class="w-40 flex-shrink-0 flex flex-col items-center">
-                        <a href="#">
+                    <div class="w-32 sm:w-40 md:w-44 flex-shrink-0 flex flex-col items-center overflow-hidden">
+                        <a href="#" class="block overflow-hidden rounded-lg">
                             <img src="./assets/img/sauce-jaune.jpeg" alt="Sauce Jaune"
-                                class="w-30 h-auto sm:w-40 sm:h-30 rounded" />
+                                class="w-28 h-20 sm:w-36 sm:h-24 md:w-40 md:h-28 rounded-lg object-cover hover:scale-[1.02] transition-all duration-200 shadow-md" />
                         </a>
-                        <p class="text-[12px] sm:text-[20px]">Sauce Jaune</p>
+                        <p class="text-[12px] sm:text-[14px] md:text-[16px] mt-2 text-center font-inter">Sauce Jaune</p>
                     </div>
 
                 </div>
             </div>
 
-            <div class="w-full h-8 flex justify-center items-center ">
+            <div class="w-full flex justify-center mt-6">
                 <a href="./assets/BD.html"
-                    class="  text-[14px] w-[100px] h-[20px] md:w-[200px] md:h-[40px] bg-bouton md:text-[18px] transition-transform hover:translate-y-0.5  rounded-[5px] font-inter text-white text-center hover:bg-orange-700">
-                    Je cuisine ! ></a>
+                    class="text-[14px] sm:text-[16px] md:text-[18px] px-6 py-3 md:px-8 md:py-4 bg-bouton rounded-[8px] font-inter text-white text-center hover:bg-orange-700 transition-all duration-200 hover:scale-[1.02] shadow-lg">
+                    Je cuisine !
+                </a>
             </div>
         </section>
     </main>

@@ -1,0 +1,161 @@
+{
+  "name": "recipe_generator",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1712,
+        48
+      ],
+      "id": "0f20f4ae-306b-4652-b4d0-2ecfc664bd42",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        2112,
+        304
+      ],
+      "id": "21714eee-94c2-47ad-a67a-2c8b04b0e05f",
+      "name": "ChatGPT OSS:120b",
+      "credentials": {
+        "groqApi": {
+          "id": "5CyEI7TlelUpYDI1",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recipe Request Preprocessor\nconst inputData = $input.all();\nconst requestData = inputData[0].json;\n\nconst query = requestData.query || '';\nconst recipeName = requestData.recipe_name || '';\nconst recipeDescription = requestData.recipe_description || '';\n\n// Extract dish name from query if not provided\nlet dishName = recipeName;\n\nif (!dishName) {\n  const patterns = [\n    /(?:recette|comment (?:faire|préparer|cuisiner))\\s+(?:du|de la|des|le|la)?\\s*([^.?!]+)/i,\n    /^([^.?!,]+?)(?:\\s*avec|\\s*pour|\\s*\\?|$)/i\n  ];\n  \n  for (const pattern of patterns) {\n    const match = query.match(pattern);\n    if (match) {\n      dishName = match[1].trim();\n      break;\n    }\n  }\n}\n\nif (!dishName) {\n  dishName = query.substring(0, 50);\n}\n\nreturn [{\n  dish_name: dishName,\n  full_query: query,\n  additional_context: recipeDescription,\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "f4b30772-132b-415a-bb6c-0b5629af9e7a",
+      "name": "Request Preprocessor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1936,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Génère une recette complète pour: {{ $json.dish_name }}\n\n{{ $json.additional_context ? 'Contexte: ' + $json.additional_context : '' }}\n{{ $json.full_query ? 'Demande complète: ' + $json.full_query : '' }}\n\nRéponds UNIQUEMENT avec un objet JSON strictement structuré.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Tu es TchopIA Recipe Generator, maître cuisinier camerounais. Génère une recette complète au format JSON:\n\n{\n  \"name\": \"Nom exact du plat\",\n  \"description\": \"Description culturelle 100-150 mots\",\n  \"region\": \"Région d'origine\",\n  \"difficulty\": \"Facile|Moyen|Difficile\",\n  \"prep_time\": \"30\",\n  \"cook_time\": \"60\",\n  \"servings\": \"4-6 personnes\",\n  \"ingredients\": [\n    {\"item\": \"Ingrédient\", \"quantity\": \"Quantité précise\", \"notes\": \"Conseils\"}\n  ],\n  \"instructions\": [\n    {\"step\": 1, \"action\": \"Description détaillée\", \"time\": \"Durée\", \"tips\": \"Astuce\"}\n  ],\n  \"tips\": [\"Conseil traditionnel important\"],\n  \"cultural_notes\": \"Signification culturelle\",\n  \"nutritional_highlights\": \"Bienfaits principaux\"\n}\n\nEXIGENCES:\n- Ingrédients authentiques camerounais\n- Instructions étape par étape détaillées\n- Techniques traditionnelles\n- Quantités précises\n- JSON valide uniquement"
+        }
+      },
+      "id": "00b50214-c98e-44bb-a2b8-f9a1ecc82ae0",
+      "name": "Recipe AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2176,
+        32
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🔧 ENHANCED Recipe Response Parser - Sub-Workflow\nconst inputData = $input.all();\nconst aiResponse = inputData[0].json;\n\nconsole.log('=== Enhanced Recipe Parser - Sub-Workflow ===');\nconsole.log('Input Type:', typeof aiResponse);\n\nlet responseText = aiResponse.output || aiResponse.text || JSON.stringify(aiResponse);\nlet recipe = null;\nlet parseMethod = 'unknown';\n\n// Method 1: Enhanced JSON object detection with multiple patterns\ntry {\n  const patterns = [\n    /\\{[\\s\\S]*?\"name\"[\\s\\S]*?\"ingredients\"[\\s\\S]*?\\}/,\n    /\\{[\\s\\S]*?\"nom\"[\\s\\S]*?\"ingrédients\"[\\s\\S]*?\\}/,\n    /\\{[\\s\\S]*?\"title\"[\\s\\S]*?\"ingredients\"[\\s\\S]*?\\}/,\n    /\\{[\\s\\S]*?\"name\"[\\s\\S]*?\"instructions\"[\\s\\S]*?\\}/\n  ];\n  \n  for (const pattern of patterns) {\n    const jsonMatch = responseText.match(pattern);\n    if (jsonMatch) {\n      try {\n        const parsed = JSON.parse(jsonMatch[0]);\n        if ((parsed.name || parsed.nom || parsed.title) && (parsed.ingredients || parsed.ingrédients || parsed.instructions)) {\n          recipe = parsed;\n          parseMethod = 'enhanced_json_pattern';\n          console.log('Parsed with enhanced JSON pattern');\n          break;\n        }\n      } catch (e) {}\n    }\n  }\n} catch (e) {\n  console.log('Enhanced JSON parsing failed:', e.message);\n}\n\n// Method 2: Nested recipe object extraction\nif (!recipe) {\n  try {\n    const nestedPatterns = [\n      /\\{[\\s\\S]*?\"recipe\"\\s*:\\s*\\{[\\s\\S]*?\\}[\\s\\S]*?\\}/,\n      /\\{[\\s\\S]*?\"recette\"\\s*:\\s*\\{[\\s\\S]*?\\}[\\s\\S]*?\\}/,\n      /\\{[\\s\\S]*?\"data\"\\s*:\\s*\\{[\\s\\S]*?\"name\"[\\s\\S]*?\\}[\\s\\S]*?\\}/\n    ];\n    \n    for (const pattern of nestedPatterns) {\n      const objectMatch = responseText.match(pattern);\n      if (objectMatch) {\n        try {\n          const parsed = JSON.parse(objectMatch[0]);\n          if (parsed.recipe && typeof parsed.recipe === 'object') {\n            recipe = parsed.recipe;\n            parseMethod = 'nested_recipe_object';\n            console.log('Found nested recipe object');\n            break;\n          } else if (parsed.recette) {\n            recipe = parsed.recette;\n            parseMethod = 'nested_recette_object';\n            break;\n          } else if (parsed.data && parsed.data.name) {\n            recipe = parsed.data;\n            parseMethod = 'nested_data_object';\n            break;\n          }\n        } catch (e) {}\n      }\n    }\n  } catch (e) {\n    console.log('Nested object parsing failed:', e.message);\n  }\n}\n\n// Method 3: Enhanced markdown code blocks\nif (!recipe) {\n  try {\n    const codeBlocks = responseText.match(/```(?:json)?\\s*([\\s\\S]*?)```/g);\n    if (codeBlocks) {\n      for (const block of codeBlocks) {\n        const content = block.replace(/```(?:json)?\\s*|```/g, '').trim();\n        try {\n          const parsed = JSON.parse(content);\n          if ((parsed.name || parsed.nom) && (parsed.ingredients || parsed.ingrédients || parsed.instructions)) {\n            recipe = parsed;\n            parseMethod = 'markdown_json_block';\n            console.log('Parsed from markdown JSON block');\n            break;\n          } else if (parsed.recipe) {\n            recipe = parsed.recipe;\n            parseMethod = 'markdown_nested_recipe';\n            break;\n          }\n        } catch (e) {}\n      }\n    }\n  } catch (e) {\n    console.log('Markdown blocks parsing failed:', e.message);\n  }\n}\n\n// Method 4: Advanced structured text parsing for markdown formatted recipes\nif (!recipe) {\n  const structuredRecipe = {\n    name: '',\n    description: '',\n    region: 'Cameroun',\n    difficulty: 'Moyen',\n    prep_time: 30,\n    cook_time: 60,\n    servings: '4-6 personnes',\n    ingredients: [],\n    instructions: [],\n    tips: [],\n    cultural_notes: '',\n    nutritional_highlights: ''\n  };\n\n  // Enhanced recipe name extraction\n  const namePatterns = [\n    /^#+\\s*(?:Recette\\s+)?(?:de\\s+)?(.+)$/mi,\n    /^\\*\\*\\s*(?:Recette\\s+)?(?:de\\s+)?(.+?)\\s*\\*\\*$/mi,\n    /(?:Recette|Recipe)\\s*:?\\s*(.+)$/mi,\n    /^(.+?)(?:\\s*-\\s*Recette|\\s*Recipe)$/mi\n  ];\n  \n  for (const pattern of namePatterns) {\n    const nameMatch = responseText.match(pattern);\n    if (nameMatch && nameMatch[1].trim().length > 3) {\n      structuredRecipe.name = nameMatch[1].trim().replace(/[*#]/g, '');\n      break;\n    }\n  }\n\n  // Enhanced ingredients extraction\n  const ingredientsPatterns = [\n    /(?:Ingrédients?|Ingredients?)\\s*:?\\s*\\n([\\s\\S]*?)(?:\\n\\n|Instructions?|Préparation|Étapes?|$)/i,\n    /(?:Liste\\s+des\\s+ingrédients?)\\s*:?\\s*\\n([\\s\\S]*?)(?:\\n\\n|Instructions?|$)/i,\n    /(?:Pour\\s+la\\s+recette)\\s*:?\\s*\\n([\\s\\S]*?)(?:\\n\\n|Instructions?|$)/i\n  ];\n  \n  for (const pattern of ingredientsPatterns) {\n    const ingredientsMatch = responseText.match(pattern);\n    if (ingredientsMatch) {\n      const ingredientLines = ingredientsMatch[1]\n        .split(/\\n/)\n        .filter(line => line.trim().match(/^[-*•]|^\\d+\\./) && line.trim().length > 5);\n        \n      structuredRecipe.ingredients = ingredientLines.map((line, index) => {\n        const cleaned = line.replace(/^[-*•]|^\\d+\\./, '').trim();\n        const parts = cleaned.split(/[-–:]/);\n        return {\n          id: `ingredient_${index}`,\n          item: parts[0].trim(),\n          quantity: parts[1] ? parts[1].trim() : 'Selon goût',\n          notes: parts[2] ? parts[2].trim() : ''\n        };\n      }).filter(ing => ing.item.length > 2);\n      break;\n    }\n  }\n\n  // Enhanced instructions extraction\n  const instructionsPatterns = [\n    /(?:Instructions?|Préparation|Étapes?|Méthode)\\s*:?\\s*\\n([\\s\\S]*?)(?:\\n\\n|Conseils?|Tips?|Notes?|$)/i,\n    /(?:Comment\\s+préparer)\\s*:?\\s*\\n([\\s\\S]*?)(?:\\n\\n|Conseils?|$)/i,\n    /(?:Mode\\s+de\\s+préparation)\\s*:?\\s*\\n([\\s\\S]*?)(?:\\n\\n|$)/i\n  ];\n  \n  for (const pattern of instructionsPatterns) {\n    const instructionsMatch = responseText.match(pattern);\n    if (instructionsMatch) {\n      const instructionLines = instructionsMatch[1]\n        .split(/\\n/)\n        .filter(line => line.trim().match(/^[-*•]|^\\d+\\./) && line.trim().length > 15);\n        \n      structuredRecipe.instructions = instructionLines.map((line, index) => {\n        const cleaned = line.replace(/^[-*•]|^\\d+\\./, '').trim();\n        const timeMatch = cleaned.match(/\\((\\d+)\\s*min\\)/);\n        const time = timeMatch ? timeMatch[1] + ' min' : '';\n        const action = cleaned.replace(/\\(\\d+\\s*min\\)/, '').trim();\n        \n        return {\n          step: index + 1,\n          action: action,\n          time: time,\n          tips: ''\n        };\n      }).filter(inst => inst.action.length > 10);\n      break;\n    }\n  }\n\n  // Enhanced tips extraction\n  const tipsPatterns = [\n    /(?:Conseils?|Tips?|Astuces?|Notes?)\\s*:?\\s*\\n([\\s\\S]*?)(?:\\n\\n|$)/i,\n    /(?:Secrets?\\s+de\\s+cuisine)\\s*:?\\s*\\n([\\s\\S]*?)(?:\\n\\n|$)/i\n  ];\n  \n  for (const pattern of tipsPatterns) {\n    const tipsMatch = responseText.match(pattern);\n    if (tipsMatch) {\n      structuredRecipe.tips = tipsMatch[1]\n        .split(/\\n/)\n        .filter(line => line.trim().match(/^[-*•]|^\\d+\\./) && line.trim().length > 10)\n        .map(line => line.replace(/^[-*•]|^\\d+\\./, '').trim())\n        .filter(tip => tip.length > 10);\n      break;\n    }\n  }\n\n  // Extract prep/cook times if mentioned in text\n  const prepTimeMatch = responseText.match(/(?:préparation|prep)\\s*:?\\s*(\\d+)\\s*min/i);\n  if (prepTimeMatch) {\n    structuredRecipe.prep_time = parseInt(prepTimeMatch[1]);\n  }\n  \n  const cookTimeMatch = responseText.match(/(?:cuisson|cook)\\s*:?\\s*(\\d+)\\s*min/i);\n  if (cookTimeMatch) {\n    structuredRecipe.cook_time = parseInt(cookTimeMatch[1]);\n  }\n\n  if (structuredRecipe.name || structuredRecipe.ingredients.length > 0 || structuredRecipe.instructions.length > 0) {\n    recipe = structuredRecipe;\n    parseMethod = 'advanced_text_extraction';\n    console.log('Extracted from advanced structured text');\n  }\n}\n\n// Enhanced fallback with comprehensive default recipe\nif (!recipe) {\n  const dishName = $('Request Preprocessor').item.json.dish_name || 'Plat Camerounais Traditionnel';\n  recipe = {\n    name: dishName,\n    description: `Recette authentique camerounaise pour ${dishName}. Ce plat traditionnel combine harmonieusement des ingrédients locaux et des techniques de cuisson transmises de génération en génération, offrant une expérience gustative riche en saveurs et en traditions culinaires.`,\n    region: 'Cameroun',\n    difficulty: 'Moyen',\n    prep_time: 30,\n    cook_time: 60,\n    servings: '4-6 personnes',\n    ingredients: [\n      {id: 'ing_1', item: \"Ingrédients de base traditionnels\", quantity: \"Selon la recette ancestrale\", notes: \"Utiliser des produits frais et locaux de qualité\"},\n      {id: 'ing_2', item: \"Épices camerounaises authentiques\", quantity: \"3-4 cuillères à café\", notes: \"Doser progressivement selon le goût\"},\n      {id: 'ing_3', item: \"Huile de palme rouge\", quantity: \"3-4 cuillères à soupe\", notes: \"Pour l'authenticité et la couleur\"},\n      {id: 'ing_4', item: \"Légumes de saison\", quantity: \"500g\", notes: \"Choisir selon la disponibilité locale\"},\n      {id: 'ing_5', item: \"Protéines (viande, poisson ou légumineuses)\", quantity: \"400-500g\", notes: \"Adapter selon les préférences\"}\n    ],\n    instructions: [\n      {step: 1, action: \"Préparer et nettoyer soigneusement tous les ingrédients. Découper en morceaux appropriés selon la tradition.\", time: \"15 min\", tips: \"Une bonne organisation facilite la suite de la préparation\"},\n      {step: 2, action: \"Dans une marmite traditionnelle, faire chauffer l'huile de palme et faire revenir les protéines jusqu'à coloration dorée.\", time: \"10 min\", tips: \"Feu moyen pour éviter de brûler et développer les arômes\"},\n      {step: 3, action: \"Ajouter les épices et légumes. Bien mélanger pour enrober tous les ingrédients d'épices.\", time: \"5 min\", tips: \"L'ordre d'ajout des épices influence le goût final\"},\n      {step: 4, action: \"Incorporer le liquide nécessaire et porter à ébullition, puis réduire le feu pour un mijotage doux.\", time: \"5 min\", tips: \"Ajuster la quantité de liquide selon la consistance désirée\"},\n      {step: 5, action: \"Laisser mijoter à feu doux en remuant occasionnellement jusqu'à tendreté parfaite.\", time: \"45-60 min\", tips: \"La patience est la clé d'un plat réussi - les saveurs se développent lentement\"},\n      {step: 6, action: \"Vérifier l'assaisonnement final et ajuster si nécessaire. Servir chaud avec l'accompagnement traditionnel.\", time: \"5 min\", tips: \"Toujours goûter avant de servir et ajuster les épices\"}\n    ],\n    tips: [\n      \"Utiliser exclusivement des ingrédients frais pour une qualité gustative optimale\",\n      \"Respecter scrupuleusement les temps de cuisson pour obtenir la texture traditionnelle\",\n      \"Adapter les quantités d'épices selon vos préférences personnelles et régionales\",\n      \"Préparer certains ingrédients la veille pour optimiser le temps de cuisson\",\n      \"Se conserve parfaitement 2-3 jours au réfrigérateur dans un contenant hermétique\",\n      \"Réchauffer doucement pour préserver toutes les saveurs d'origine\"\n    ],\n    cultural_notes: `${dishName} représente l'essence même de la gastronomie camerounaise, reflétant la diversité culturelle et la richesse des traditions culinaires de nos régions. Ce plat occupe une place centrale lors des célébrations familiales et des rassemblements communautaires, symbolisant le partage et l'hospitalité légendaire du Cameroun.`,\n    nutritional_highlights: \"Plat équilibré riche en protéines de qualité, fibres alimentaires et vitamines essentielles. Source naturelle de bons lipides grâce à l'huile de palme authentique. Apport énergétique optimal pour une alimentation saine et nutritive.\"\n  };\n  parseMethod = 'comprehensive_fallback';\n  console.log('Using comprehensive fallback recipe');\n}\n\n// Enhanced validation and normalization\nif (recipe) {\n  // Ensure all required fields exist with proper defaults\n  recipe.name = recipe.name || recipe.nom || recipe.title || 'Plat Camerounais';\n  recipe.description = recipe.description || recipe.desc || 'Recette traditionnelle camerounaise authentique';\n  recipe.region = recipe.region || 'Cameroun';\n  recipe.difficulty = recipe.difficulty || recipe.niveau || 'Moyen';\n  recipe.servings = recipe.servings || recipe.portions || '4-6 personnes';\n  \n  // Normalize time fields\n  recipe.prep_time = parseInt(recipe.prep_time || recipe.preparation_time || 30);\n  recipe.cook_time = parseInt(recipe.cook_time || recipe.cooking_time || 60);\n  recipe.total_time = recipe.prep_time + recipe.cook_time;\n  \n  // Ensure arrays exist and are properly structured\n  recipe.ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];\n  recipe.instructions = Array.isArray(recipe.instructions) ? recipe.instructions : [];\n  recipe.tips = Array.isArray(recipe.tips) ? recipe.tips : [];\n  \n  // Normalize ingredients structure\n  recipe.ingredients = recipe.ingredients.map((ing, index) => ({\n    id: ing.id || `ingredient_${index + 1}`,\n    item: ing.item || ing.name || ing.ingredient || 'Ingrédient',\n    quantity: ing.quantity || ing.amount || ing.quantité || 'Selon goût',\n    notes: ing.notes || ing.note || ing.comment || ''\n  }));\n  \n  // Normalize instructions structure\n  recipe.instructions = recipe.instructions.map((inst, index) => ({\n    step: inst.step || (index + 1),\n    action: inst.action || inst.description || inst.text || inst.instruction || 'Étape de préparation',\n    time: inst.time || inst.duration || inst.temps || '',\n    tips: inst.tips || inst.tip || inst.conseil || ''\n  }));\n  \n  // Clean text fields\n  recipe.name = recipe.name.replace(/[*#`\"']/g, '').trim();\n  recipe.description = recipe.description.replace(/[*#`]/g, '').trim();\n  \n  // Add comprehensive metadata\n  recipe.generated_at = new Date().toISOString();\n  recipe.language = 'fr';\n  recipe.cuisine = 'Camerounaise';\n  recipe.type = recipe.category || 'Plat principal';\n  recipe.source = 'TchopIA AI Generator';\n}\n\nconsole.log('Final recipe parsed successfully');\nconsole.log('Parse method:', parseMethod);\nconsole.log('Recipe name:', recipe.name);\nconsole.log('Ingredients count:', recipe.ingredients.length);\nconsole.log('Instructions count:', recipe.instructions.length);\n\nreturn [{\n  success: true,\n  action: 'generate_recipe',\n  data_type: 'recipe',\n  recipe: recipe,\n  parse_method: parseMethod,\n  timestamp: new Date().toISOString(),\n  metadata: {\n    source: 'sub_workflow_parser',\n    quality: parseMethod.includes('fallback') ? 'default' : 'ai_generated',\n    parser_version: '2.0_enhanced',\n    completeness: {\n      has_name: !!recipe.name && recipe.name.length > 3,\n      has_ingredients: recipe.ingredients.length > 0,\n      has_instructions: recipe.instructions.length > 0,\n      has_tips: recipe.tips.length > 0,\n      has_cultural_notes: !!recipe.cultural_notes\n    },\n    estimated_total_time: recipe.total_time\n  }\n}];"
+      },
+      "id": "b21485f7-cf11-477f-ac37-7d53353ccf54",
+      "name": "Response Parser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2544,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  success: false,\n  action: 'generate_recipe',\n  error: 'generation_failed',\n  message: 'Impossible de générer la recette',\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "6e3b3ea6-1610-4156-815b-e104a454dde0",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        112
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Request Preprocessor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChatGPT OSS:120b": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Recipe AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Preprocessor": {
+      "main": [
+        [
+          {
+            "node": "Recipe AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recipe AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Response Parser",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1177079a-29d2-433d-8157-5a0eb58e01be",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "93ace94098d9f9dd844138bcf4397e622c6ea8d222af8db31040119d08e72bcf"
+  },
+  "id": "coNDPEfojluaHvhC",
+  "tags": []
+}

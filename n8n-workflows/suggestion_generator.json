@@ -1,0 +1,160 @@
+{
+  "name": "suggestion_generator",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1184,
+        32
+      ],
+      "id": "23cbe224-05e2-4c22-9baf-297642ee7ac6",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        336
+      ],
+      "id": "2c4db3a9-c7b9-4199-9061-eaa251bec66b",
+      "name": "ChatGPT OSS:120b",
+      "credentials": {
+        "groqApi": {
+          "id": "5CyEI7TlelUpYDI1",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Suggestion Request Preprocessor\nconst inputData = $input.all();\nconst requestData = inputData[0].json;\n\nconsole.log('=== Suggestion Generator - Request Preprocessor ===');\nconsole.log('Input:', requestData);\n\nconst query = requestData.query || requestData.message || '';\n\nif (!query || query.trim().length === 0) {\n  throw new Error('Query is required for suggestions');\n}\n\n// Extract ingredients if mentioned\nconst ingredientPatterns = [\n  /j'ai ([^.]+)/i,\n  /avec ([^.]+)/i,\n  /disposer? de ([^.]+)/i,\n  /ingrédients?:?\\s*([^.]+)/i\n];\n\nlet extractedIngredients = [];\nfor (const pattern of ingredientPatterns) {\n  const match = query.match(pattern);\n  if (match) {\n    const ingredients = match[1]\n      .split(/,|et|;/)\n      .map(i => i.trim())\n      .filter(i => i.length > 2);\n    extractedIngredients.push(...ingredients);\n  }\n}\n\n// Prepare enhanced prompt\nconst enhancedPrompt = {\n  original_query: query,\n  extracted_ingredients: extractedIngredients,\n  prompt_type: extractedIngredients.length > 0 ? 'ingredient_based' : 'general',\n  timestamp: new Date().toISOString()\n};\n\nconsole.log('Preprocessed Request:', enhancedPrompt);\n\nreturn [enhancedPrompt];"
+      },
+      "id": "104bbaa4-f77d-47f5-bfd5-83f6342f65ee",
+      "name": "Request Preprocessor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt_type === 'ingredient_based' ? \n'Suggère des plats camerounais utilisant: ' + $json.extracted_ingredients.join(', ') + '. Contexte: ' + $json.original_query :\n'Suggère des plats camerounais pour: ' + $json.original_query\n}}\n\nRéponds UNIQUEMENT avec un JSON array de 5 suggestions.",
+        "options": {
+          "systemMessage": "Tu es TchopIA Suggestion Engine. Génère EXACTEMENT 5 suggestions de plats camerounais au format JSON strict:\n\n[\n  {\n    \"name\": \"Nom du plat\",\n    \"description\": \"Description 150-200 caractères avec région, ingrédients clés, et profil gustatif\"\n  }\n]\n\nRÈGLES:\n- EXACTEMENT 5 suggestions\n- JSON valide uniquement\n- Descriptions 150-200 caractères\n- Varier régions et types de plats\n- Plats authentiques camerounais\n- Aucun texte en dehors du JSON"
+        }
+      },
+      "id": "fa0b0a53-01f5-45e2-b1ac-02b96e75ec27",
+      "name": "Suggestion AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1664,
+        16
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🔧 ENHANCED Suggestion Response Parser - Sub-Workflow\nconst inputData = $input.all();\nconst aiResponse = inputData[0].json;\n\nconsole.log('=== Enhanced Suggestion Parser - Sub-Workflow ===');\nconsole.log('Input Type:', typeof aiResponse);\n\nlet responseText = aiResponse.output || aiResponse.text || JSON.stringify(aiResponse);\nlet suggestions = [];\nlet parseMethod = 'unknown';\n\n// Method 1: Direct JSON array parsing - Multiple attempts\ntry {\n  // Try to find JSON arrays with different patterns\n  const patterns = [\n    /\\[\\s*\\{[\\s\\S]*?\"name\"[\\s\\S]*?\\}\\s*\\]/g,\n    /\\[\\s*\\{[\\s\\S]*?\"nom\"[\\s\\S]*?\\}\\s*\\]/g,\n    /\\[\\s*\\{[\\s\\S]*?\\}\\s*\\]/g\n  ];\n  \n  for (const pattern of patterns) {\n    const matches = responseText.match(pattern);\n    if (matches) {\n      for (const match of matches) {\n        try {\n          const parsed = JSON.parse(match);\n          if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].name) {\n            suggestions = parsed;\n            parseMethod = 'json_array_pattern';\n            console.log('Parsed with pattern:', pattern);\n            break;\n          }\n        } catch (e) {}\n      }\n      if (suggestions.length > 0) break;\n    }\n  }\n} catch (e) {\n  console.log('Pattern matching failed:', e.message);\n}\n\n// Method 2: Extract from object containing suggestions\nif (suggestions.length === 0) {\n  try {\n    const objectMatch = responseText.match(/\\{[\\s\\S]*?\"suggestions\"\\s*:\\s*\\[[\\s\\S]*?\\][\\s\\S]*?\\}/);\n    if (objectMatch) {\n      const parsed = JSON.parse(objectMatch[0]);\n      if (parsed.suggestions && Array.isArray(parsed.suggestions)) {\n        suggestions = parsed.suggestions;\n        parseMethod = 'nested_suggestions';\n        console.log('Found nested suggestions object');\n      }\n    }\n  } catch (e) {\n    console.log('Nested suggestions parse failed:', e.message);\n  }\n}\n\n// Method 3: Multiple markdown code blocks\nif (suggestions.length === 0) {\n  try {\n    const codeBlocks = responseText.match(/```(?:json)?\\s*([\\s\\S]*?)```/g);\n    if (codeBlocks) {\n      for (const block of codeBlocks) {\n        const content = block.replace(/```(?:json)?\\s*|```/g, '').trim();\n        try {\n          const parsed = JSON.parse(content);\n          if (Array.isArray(parsed) && parsed[0] && parsed[0].name) {\n            suggestions = parsed;\n            parseMethod = 'markdown_block';\n            console.log('Parsed from markdown block');\n            break;\n          } else if (parsed.suggestions) {\n            suggestions = parsed.suggestions;\n            parseMethod = 'markdown_nested';\n            break;\n          }\n        } catch (e) {}\n      }\n    }\n  } catch (e) {\n    console.log('Markdown blocks parse failed:', e.message);\n  }\n}\n\n// Method 4: Enhanced table extraction\nif (suggestions.length === 0) {\n  const tablePatterns = [\n    /\\|\\s*(?:Plat|Nom|Name|Dish)[\\s\\S]*?\\|[\\s\\S]*?\\n([\\s\\S]*?)(?:\\n\\n|$)/,\n    /\\|[^|]*\\|[^|]*\\|[\\s\\S]*?\\n([\\s\\S]*?)(?:\\n\\n|$)/\n  ];\n  \n  for (const pattern of tablePatterns) {\n    const tableMatch = responseText.match(pattern);\n    if (tableMatch) {\n      const rows = tableMatch[1].split('\\n').filter(line => line.trim().startsWith('|'));\n      suggestions = rows.map(row => {\n        const cells = row.split('|').map(c => c.trim()).filter(c => c && c !== '---');\n        if (cells.length >= 2) {\n          return {\n            name: cells[0].replace(/\\*\\*|__|\"|'/g, '').trim(),\n            description: cells[1].replace(/\\*\\*|__|\"|'/g, '').trim()\n          };\n        }\n      }).filter(s => s && s.name && s.description && s.name.length > 2);\n      \n      if (suggestions.length > 0) {\n        parseMethod = 'table_extraction';\n        console.log('Extracted from table:', suggestions.length);\n        break;\n      }\n    }\n  }\n}\n\n// Method 5: Enhanced line-by-line extraction with multiple patterns\nif (suggestions.length === 0) {\n  const lines = responseText.split('\\n').filter(l => l.trim());\n  const patterns = [\n    /^\\d+\\.\\s*(?:\\*\\*)?([^*\\-:]+?)(?:\\*\\*)?\\s*[-:–]\\s*(.+)$/,\n    /^\\*\\s*(?:\\*\\*)?([^*\\-:]+?)(?:\\*\\*)?\\s*[-:–]\\s*(.+)$/,\n    /^-\\s*(?:\\*\\*)?([^*\\-:]+?)(?:\\*\\*)?\\s*[-:–]\\s*(.+)$/,\n    /^(?:\\*\\*)?([A-Za-zÀ-ÿ\\s]+?)(?:\\*\\*)?\\s*[:–-]\\s*(.+)$/,\n    /^([A-Za-zÀ-ÿ\\s]+?)\\s*[-–:]\\s*(.{20,})$/\n  ];\n  \n  for (const line of lines) {\n    for (const pattern of patterns) {\n      const match = line.match(pattern);\n      if (match && match[1] && match[2]) {\n        const name = match[1].trim();\n        const description = match[2].trim();\n        if (name.length > 2 && description.length > 20) {\n          suggestions.push({\n            name: name,\n            description: description\n          });\n          break;\n        }\n      }\n    }\n  }\n  \n  if (suggestions.length > 0) {\n    parseMethod = 'line_extraction_enhanced';\n    console.log('Enhanced line extraction:', suggestions.length);\n  }\n}\n\n// Method 6: French cuisine-specific named entity extraction\nif (suggestions.length === 0) {\n  const cuisineTerms = [\n    'Ndolé', 'Eru', 'Koki', 'Fufu', 'Achu', 'Banga', 'Miondo', 'Kwacoco',\n    'Poulet DG', 'Poisson Braisé', 'Sauce Jaune', 'Gombo', 'Pistache',\n    'Mbongo', 'Sangah', 'Okok', 'Bitter Leaf', 'Water Fufu'\n  ];\n  \n  const dishPattern = new RegExp(`(${cuisineTerms.join('|')})`, 'gi');\n  const dishMatches = responseText.match(dishPattern);\n  \n  if (dishMatches) {\n    const uniqueDishes = [...new Set(dishMatches.map(d => d.toLowerCase()))];\n    suggestions = uniqueDishes.slice(0, 5).map(dish => ({\n      name: dish.charAt(0).toUpperCase() + dish.slice(1),\n      description: `Plat traditionnel camerounais ${dish} préparé selon les méthodes ancestrales avec des ingrédients locaux authentiques.`\n    }));\n    parseMethod = 'cuisine_entity_extraction';\n    console.log('Extracted cuisine entities:', suggestions.length);\n  }\n}\n\n// Enhanced fallback with diverse regional suggestions\nif (suggestions.length === 0) {\n  suggestions = [\n    {\n      name: \"Ndolé\",\n      description: \"Plat national du Cameroun originaire du Centre, aux feuilles d'aité marinées dans une sauce crémeuse d'arachides grillées, enrichie de viande et crevettes fumées - Un symbole de l'hospitalité camerounaise\",\n      region: \"Centre\",\n      category: \"Plat principal\"\n    },\n    {\n      name: \"Eru\",\n      description: \"Spécialité emblématique du Sud-Ouest aux feuilles d'eru finement ciselées, mélangées au water fufu onctueux, viande et crayfish pour une texture filante unique et savoureuse\",\n      region: \"Sud-Ouest\",\n      category: \"Plat principal\"\n    },\n    {\n      name: \"Koki\",\n      description: \"Gâteau traditionnel de l'Ouest fait de haricots blancs moulus cuits à la vapeur dans des feuilles de bananier, parfumé aux épices et huile de palme rouge authentique\",\n      region: \"Ouest\",\n      category: \"Plat végétarien\"\n    },\n    {\n      name: \"Achu Soup\",\n      description: \"Soupe jaune onctueuse du Nord-Ouest préparée avec limestone et huile de palme, traditionnellement accompagnée de boulettes de coco-yam pilées au mortier\",\n      region: \"Nord-Ouest\",\n      category: \"Soupe\"\n    },\n    {\n      name: \"Poisson Braisé\",\n      description: \"Spécialité côtière où le poisson frais est mariné aux épices locales puis grillé sur braises, servi avec plantains et sauce tomate épicée - Délice des régions littorales\",\n      region: \"Littoral\",\n      category: \"Grillades\"\n    }\n  ];\n  parseMethod = 'enhanced_regional_fallback';\n  console.log('Using enhanced regional fallback suggestions');\n}\n\n// Enhanced validation and enrichment\nsuggestions = suggestions\n  .filter(s => s && s.name && s.description)\n  .filter(s => s.name.trim().length > 1 && s.description.trim().length > 20)\n  .slice(0, 5)\n  .map((s, index) => ({\n    id: `suggestion_${Date.now()}_${index}`,\n    name: s.name.replace(/[*_#`\"']/g, '').trim(),\n    description: s.description.replace(/[*_`\"']/g, '').trim(),\n    region: s.region || 'Cameroun',\n    category: s.category || 'Cuisine Camerounaise',\n    estimated_prep_time: s.prep_time || '30-60 min',\n    difficulty: s.difficulty || 'Moyen',\n    authenticity: 'Traditional'\n  }));\n\n// Ensure minimum quality descriptions\nsuggestions = suggestions.map(s => {\n  if (s.description.length < 50) {\n    s.description += ` - Recette authentique de la cuisine camerounaise, riche en saveurs et traditions culinaires.`;\n  }\n  return s;\n});\n\nconsole.log('Final suggestions count:', suggestions.length);\nconsole.log('Parse method:', parseMethod);\nconsole.log('First suggestion:', suggestions[0] ? suggestions[0].name : 'None');\n\nreturn [{\n  success: true,\n  action: 'get_suggestions',\n  data_type: 'suggestions',\n  suggestions: suggestions,\n  count: suggestions.length,\n  parse_method: parseMethod,\n  timestamp: new Date().toISOString(),\n  metadata: {\n    source: 'sub_workflow_parser',\n    quality: parseMethod.includes('fallback') ? 'default' : 'ai_generated',\n    parser_version: '2.0_enhanced',\n    has_regional_info: suggestions.some(s => s.region && s.region !== 'Cameroun')\n  }\n}];"
+      },
+      "id": "7990c0f1-c63a-4da8-b2de-3cc413221ddb",
+      "name": "Response Parser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2128,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Error handler\nreturn [{\n  success: false,\n  action: 'get_suggestions',\n  error: 'generation_failed',\n  message: 'Impossible de générer des suggestions',\n  suggestions: [\n    {name: \"Ndolé\", description: \"Plat national camerounais aux arachides et feuilles\"},\n    {name: \"Eru\", description: \"Spécialité du Sud-Ouest aux feuilles et water fufu\"}\n  ],\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "3b1682f1-9d08-40ff-893b-fd2416e55960",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2128,
+        160
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Request Preprocessor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChatGPT OSS:120b": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Suggestion AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Preprocessor": {
+      "main": [
+        [
+          {
+            "node": "Suggestion AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Suggestion AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Response Parser",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "734d838f-b687-4ecd-b3a3-61006ef50ce2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "93ace94098d9f9dd844138bcf4397e622c6ea8d222af8db31040119d08e72bcf"
+  },
+  "id": "C60bVIonekWy8VAE",
+  "tags": []
+}

@@ -1,0 +1,161 @@
+{
+  "name": "recipe_generator",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1712,
+        48
+      ],
+      "id": "0f20f4ae-306b-4652-b4d0-2ecfc664bd42",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        2112,
+        304
+      ],
+      "id": "21714eee-94c2-47ad-a67a-2c8b04b0e05f",
+      "name": "ChatGPT OSS:120b",
+      "credentials": {
+        "groqApi": {
+          "id": "5CyEI7TlelUpYDI1",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recipe Request Preprocessor\nconst inputData = $input.all();\nconst requestData = inputData[0].json;\n\nconst query = requestData.query || '';\nconst recipeName = requestData.recipe_name || '';\nconst recipeDescription = requestData.recipe_description || '';\n\n// Extract dish name from query if not provided\nlet dishName = recipeName;\n\nif (!dishName) {\n  const patterns = [\n    /(?:recette|comment (?:faire|préparer|cuisiner))\\s+(?:du|de la|des|le|la)?\\s*([^.?!]+)/i,\n    /^([^.?!,]+?)(?:\\s*avec|\\s*pour|\\s*\\?|$)/i\n  ];\n  \n  for (const pattern of patterns) {\n    const match = query.match(pattern);\n    if (match) {\n      dishName = match[1].trim();\n      break;\n    }\n  }\n}\n\nif (!dishName) {\n  dishName = query.substring(0, 50);\n}\n\nreturn [{\n  dish_name: dishName,\n  full_query: query,\n  additional_context: recipeDescription,\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "f4b30772-132b-415a-bb6c-0b5629af9e7a",
+      "name": "Request Preprocessor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1936,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Génère une recette complète pour: {{ $json.dish_name }}\n\n{{ $json.additional_context ? 'Contexte: ' + $json.additional_context : '' }}\n{{ $json.full_query ? 'Demande complète: ' + $json.full_query : '' }}\n\nRéponds UNIQUEMENT avec un objet JSON strictement structuré.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Tu es TchopIA Recipe Generator, maître cuisinier camerounais. Génère une recette complète au format JSON:\n\n{\n  \"name\": \"Nom exact du plat\",\n  \"description\": \"Description culturelle 100-150 mots\",\n  \"region\": \"Région d'origine\",\n  \"difficulty\": \"Facile|Moyen|Difficile\",\n  \"prep_time\": \"30\",\n  \"cook_time\": \"60\",\n  \"servings\": \"4-6 personnes\",\n  \"ingredients\": [\n    {\"item\": \"Ingrédient\", \"quantity\": \"Quantité précise\", \"notes\": \"Conseils\"}\n  ],\n  \"instructions\": [\n    {\"step\": 1, \"action\": \"Description détaillée\", \"time\": \"Durée\", \"tips\": \"Astuce\"}\n  ],\n  \"tips\": [\"Conseil traditionnel important\"],\n  \"cultural_notes\": \"Signification culturelle\",\n  \"nutritional_highlights\": \"Bienfaits principaux\"\n}\n\nEXIGENCES:\n- Ingrédients authentiques camerounais\n- Instructions étape par étape détaillées\n- Techniques traditionnelles\n- Quantités précises\n- JSON valide uniquement"
+        }
+      },
+      "id": "00b50214-c98e-44bb-a2b8-f9a1ecc82ae0",
+      "name": "Recipe AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2176,
+        32
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recipe Response Parser\nconst inputData = $input.all();\nconst aiResponse = inputData[0].json;\n\nlet responseText = aiResponse.output || aiResponse.text || JSON.stringify(aiResponse);\nlet recipe = null;\nlet parseMethod = 'unknown';\n\n// Try JSON extraction\ntry {\n  const jsonMatch = responseText.match(/\\{[\\s\\S]*\"name\"[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    recipe = JSON.parse(jsonMatch[0]);\n    parseMethod = 'direct_json';\n  }\n} catch (e) {}\n\n// Try markdown block\nif (!recipe) {\n  try {\n    const codeBlock = responseText.match(/```(?:json)?\\s*([\\s\\S]*?)```/);\n    if (codeBlock) {\n      recipe = JSON.parse(codeBlock[1]);\n      parseMethod = 'markdown';\n    }\n  } catch (e) {}\n}\n\n// Fallback: Create structured recipe from text\nif (!recipe) {\n  recipe = {\n    name: $('Request Preprocessor').item.json.dish_name,\n    description: \"Recette traditionnelle camerounaise\",\n    region: \"Cameroun\",\n    difficulty: \"Moyen\",\n    prep_time: \"30\",\n    cook_time: \"60\",\n    servings: \"4-6 personnes\",\n    ingredients: [{item: \"Ingrédients traditionnels\", quantity: \"Selon recette\", notes: \"\"}],\n    instructions: [{step: 1, action: responseText.substring(0, 500), time: \"Variable\", tips: \"\"}],\n    tips: [\"Suivre les méthodes traditionnelles\"],\n    cultural_notes: \"Plat traditionnel camerounais\",\n    nutritional_highlights: \"Riche en saveurs\"\n  };\n  parseMethod = 'fallback';\n}\n\n// Validate and format\nrecipe.generated_at = new Date().toISOString();\nrecipe.prep_time = parseInt(recipe.prep_time) || 30;\nrecipe.cook_time = parseInt(recipe.cook_time) || 60;\nrecipe.total_time = recipe.prep_time + recipe.cook_time;\n\nreturn [{\n  success: true,\n  action: 'generate_recipe',\n  recipe: recipe,\n  parse_method: parseMethod,\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "b21485f7-cf11-477f-ac37-7d53353ccf54",
+      "name": "Response Parser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2544,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  success: false,\n  action: 'generate_recipe',\n  error: 'generation_failed',\n  message: 'Impossible de générer la recette',\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "6e3b3ea6-1610-4156-815b-e104a454dde0",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        112
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Request Preprocessor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChatGPT OSS:120b": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Recipe AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Preprocessor": {
+      "main": [
+        [
+          {
+            "node": "Recipe AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recipe AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Response Parser",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1177079a-29d2-433d-8157-5a0eb58e01be",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "93ace94098d9f9dd844138bcf4397e622c6ea8d222af8db31040119d08e72bcf"
+  },
+  "id": "coNDPEfojluaHvhC",
+  "tags": []
+}

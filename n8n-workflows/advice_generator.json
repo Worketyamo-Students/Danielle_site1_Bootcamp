@@ -1,0 +1,160 @@
+{
+  "name": "advice_generator",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        0
+      ],
+      "id": "1a941a58-e6f4-4a66-b782-697e69d3520b",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        224
+      ],
+      "id": "5b7c4663-0454-41ec-ab62-3e3d9d79d59b",
+      "name": "GPT-OSS:120b",
+      "credentials": {
+        "groqApi": {
+          "id": "5CyEI7TlelUpYDI1",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Advice Request Preprocessor\nconst inputData = $input.all();\nconst requestData = inputData[0].json;\n\nconst query = requestData.query || '';\n\n// Categorize advice type\nlet adviceType = 'Général';\n\nif (query.match(/technique|méthode|comment faire/i)) {\n  adviceType = 'Technique';\n} else if (query.match(/ingrédient|substitut|remplacer/i)) {\n  adviceType = 'Ingrédients';\n} else if (query.match(/problème|erreur|raté|trop/i)) {\n  adviceType = 'Problème';\n} else if (query.match(/astuce|conseil|secret/i)) {\n  adviceType = 'Astuce';\n}\n\nreturn [{\n  query: query,\n  advice_type: adviceType,\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "fac86efb-4bf0-48f3-bea7-4314b057e8f0",
+      "name": "Request Preprocessor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Question culinaire: {{ $json.query }}\n\nType de conseil détecté: {{ $json.advice_type }}\n\nRéponds avec un objet JSON structuré de conseils détaillés.",
+        "options": {
+          "systemMessage": "Tu es TchopIA Advisor, expert en conseils culinaires camerounais. Génère des conseils au format JSON:\n\n{\n  \"advice_type\": \"Technique|Ingrédients|Problème|Astuce|Général\",\n  \"main_advice\": \"Conseil principal détaillé 200-300 mots\",\n  \"quick_tips\": [\"Astuce 1\", \"Astuce 2\", \"Astuce 3\"],\n  \"traditional_secrets\": [\"Secret 1\", \"Secret 2\"],\n  \"ingredients_focus\": {\n    \"recommended\": [\"Ingrédient 1\"],\n    \"substitutes\": [\"Alternative 1\"],\n    \"avoid\": [\"À éviter\"]\n  },\n  \"step_by_step\": [\n    {\"step\": 1, \"action\": \"Action\", \"tip\": \"Conseil\"}\n  ],\n  \"cultural_context\": \"Contexte culturel\",\n  \"common_mistakes\": [\"Erreur courante et solution\"],\n  \"seasonal_notes\": \"Notes saisonnières\",\n  \"difficulty_level\": \"Débutant|Intermédiaire|Avancé\",\n  \"estimated_time\": \"Temps\"\n}\n\nEXIGENCES:\n- Conseils pratiques et applicables\n- Respect traditions camerounaises\n- Solutions concrètes\n- JSON valide uniquement"
+        }
+      },
+      "id": "e9a29a03-7020-40a2-9d3e-8cd88a8f2d86",
+      "name": "Advice AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1664,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Advice Response Parser\nconst inputData = $input.all();\nconst aiResponse = inputData[0].json;\n\nlet responseText = aiResponse.output || aiResponse.text || JSON.stringify(aiResponse);\nlet advice = null;\nlet parseMethod = 'unknown';\n\n// Try JSON extraction\ntry {\n  const jsonMatch = responseText.match(/\\{[\\s\\S]*\"advice_type\"[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    advice = JSON.parse(jsonMatch[0]);\n    parseMethod = 'direct_json';\n  }\n} catch (e) {}\n\n// Try markdown block\nif (!advice) {\n  try {\n    const codeBlock = responseText.match(/```(?:json)?\\s*([\\s\\S]*?)```/);\n    if (codeBlock) {\n      advice = JSON.parse(codeBlock[1]);\n      parseMethod = 'markdown';\n    }\n  } catch (e) {}\n}\n\n// Fallback\nif (!advice) {\n  advice = {\n    advice_type: $('Request Preprocessor').item.json.advice_type,\n    main_advice: responseText.substring(0, 800),\n    quick_tips: [\"Utiliser ingrédients frais\", \"Respecter techniques traditionnelles\"],\n    traditional_secrets: [\"Patience dans la cuisson\"],\n    ingredients_focus: {\n      recommended: [\"Épices locales\"],\n      substitutes: [\"Alternatives disponibles\"],\n      avoid: [\"Ingrédients non traditionnels\"]\n    },\n    step_by_step: [{step: 1, action: \"Suivre conseils traditionnels\", tip: \"Adapter selon ingrédients\"}],\n    cultural_context: \"Conseil basé sur traditions camerounaises\",\n    common_mistakes: [\"Ne pas respecter temps de cuisson\"],\n    seasonal_notes: \"Adapter selon saison\",\n    difficulty_level: \"Intermédiaire\",\n    estimated_time: \"Variable\"\n  };\n  parseMethod = 'fallback';\n}\n\nreturn [{\n  success: true,\n  action: 'cooking_advice',\n  advice: advice,\n  parse_method: parseMethod,\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "69fc07f9-aeb3-405c-ad6c-4ca290308afb",
+      "name": "Response Parser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  success: false,\n  action: 'cooking_advice',\n  error: 'generation_failed',\n  message: 'Impossible de générer le conseil',\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "9a00cf9d-f96a-418f-9bd9-ece44fcabb98",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        144
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Request Preprocessor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-OSS:120b": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Advice AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Preprocessor": {
+      "main": [
+        [
+          {
+            "node": "Advice AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Advice AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Response Parser",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f46bc964-5145-4c68-a8e7-5a660223d493",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "93ace94098d9f9dd844138bcf4397e622c6ea8d222af8db31040119d08e72bcf"
+  },
+  "id": "uMFHRt7rGUhqHNwU",
+  "tags": []
+}

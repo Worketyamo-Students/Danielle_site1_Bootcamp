@@ -1,0 +1,160 @@
+{
+  "name": "suggestion_generator",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1184,
+        32
+      ],
+      "id": "23cbe224-05e2-4c22-9baf-297642ee7ac6",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        336
+      ],
+      "id": "2c4db3a9-c7b9-4199-9061-eaa251bec66b",
+      "name": "ChatGPT OSS:120b",
+      "credentials": {
+        "groqApi": {
+          "id": "5CyEI7TlelUpYDI1",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Suggestion Request Preprocessor\nconst inputData = $input.all();\nconst requestData = inputData[0].json;\n\nconsole.log('=== Suggestion Generator - Request Preprocessor ===');\nconsole.log('Input:', requestData);\n\nconst query = requestData.query || requestData.message || '';\n\nif (!query || query.trim().length === 0) {\n  throw new Error('Query is required for suggestions');\n}\n\n// Extract ingredients if mentioned\nconst ingredientPatterns = [\n  /j'ai ([^.]+)/i,\n  /avec ([^.]+)/i,\n  /disposer? de ([^.]+)/i,\n  /ingrédients?:?\\s*([^.]+)/i\n];\n\nlet extractedIngredients = [];\nfor (const pattern of ingredientPatterns) {\n  const match = query.match(pattern);\n  if (match) {\n    const ingredients = match[1]\n      .split(/,|et|;/)\n      .map(i => i.trim())\n      .filter(i => i.length > 2);\n    extractedIngredients.push(...ingredients);\n  }\n}\n\n// Prepare enhanced prompt\nconst enhancedPrompt = {\n  original_query: query,\n  extracted_ingredients: extractedIngredients,\n  prompt_type: extractedIngredients.length > 0 ? 'ingredient_based' : 'general',\n  timestamp: new Date().toISOString()\n};\n\nconsole.log('Preprocessed Request:', enhancedPrompt);\n\nreturn [enhancedPrompt];"
+      },
+      "id": "104bbaa4-f77d-47f5-bfd5-83f6342f65ee",
+      "name": "Request Preprocessor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt_type === 'ingredient_based' ? \n'Suggère des plats camerounais utilisant: ' + $json.extracted_ingredients.join(', ') + '. Contexte: ' + $json.original_query :\n'Suggère des plats camerounais pour: ' + $json.original_query\n}}\n\nRéponds UNIQUEMENT avec un JSON array de 5 suggestions.",
+        "options": {
+          "systemMessage": "Tu es TchopIA Suggestion Engine. Génère EXACTEMENT 5 suggestions de plats camerounais au format JSON strict:\n\n[\n  {\n    \"name\": \"Nom du plat\",\n    \"description\": \"Description 150-200 caractères avec région, ingrédients clés, et profil gustatif\"\n  }\n]\n\nRÈGLES:\n- EXACTEMENT 5 suggestions\n- JSON valide uniquement\n- Descriptions 150-200 caractères\n- Varier régions et types de plats\n- Plats authentiques camerounais\n- Aucun texte en dehors du JSON"
+        }
+      },
+      "id": "fa0b0a53-01f5-45e2-b1ac-02b96e75ec27",
+      "name": "Suggestion AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1664,
+        16
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Advanced Suggestion Response Parser\nconst inputData = $input.all();\nconst aiResponse = inputData[0].json;\n\nlet responseText = aiResponse.output || aiResponse.text || JSON.stringify(aiResponse);\nlet suggestions = [];\nlet parseMethod = 'unknown';\n\n// Method 1: Direct JSON parsing\ntry {\n  const jsonMatch = responseText.match(/\\[\\s*\\{[\\s\\S]*\\}\\s*\\]/);\n  if (jsonMatch) {\n    suggestions = JSON.parse(jsonMatch[0]);\n    parseMethod = 'direct_json';\n  }\n} catch (e) {}\n\n// Method 2: Markdown JSON block\nif (suggestions.length === 0) {\n  try {\n    const codeBlock = responseText.match(/```(?:json)?\\s*([\\s\\S]*?)```/);\n    if (codeBlock) {\n      suggestions = JSON.parse(codeBlock[1]);\n      parseMethod = 'markdown';\n    }\n  } catch (e) {}\n}\n\n// Method 3: Line-by-line extraction\nif (suggestions.length === 0) {\n  const lines = responseText.split('\\n').filter(l => l.trim());\n  \n  for (const line of lines) {\n    const match = line.match(/^\\d+\\.\\s*(?:\\*\\*)?([^*\\-:]+?)(?:\\*\\*)?\\s*[-:–]\\s*(.+)$/);\n    if (match) {\n      suggestions.push({\n        name: match[1].trim(),\n        description: match[2].trim()\n      });\n    }\n  }\n  \n  if (suggestions.length > 0) parseMethod = 'line_extraction';\n}\n\n// Fallback suggestions\nif (suggestions.length === 0) {\n  suggestions = [\n    {name: \"Ndolé\", description: \"Plat national du Centre aux feuilles d'aité marinées dans une sauce crémeuse d'arachides grillées, enrichie de viande et crevettes fumées\"},\n    {name: \"Eru\", description: \"Spécialité du Sud-Ouest aux feuilles d'eru finement ciselées, mélangées au water fufu, viande et crayfish pour une texture filante unique\"},\n    {name: \"Poulet DG\", description: \"Version moderne et colorée de poulet sauté aux légumes frais, plantains dorés et épices, devenu incontournable des grandes occasions\"}\n  ];\n  parseMethod = 'fallback';\n}\n\n// Validate and clean\nsuggestions = suggestions\n  .filter(s => s.name && s.description)\n  .slice(0, 5)\n  .map(s => ({\n    name: s.name.replace(/[*_#]/g, '').trim(),\n    description: s.description.replace(/[*_]/g, '').trim()\n  }));\n\nreturn [{\n  success: true,\n  action: 'get_suggestions',\n  suggestions: suggestions,\n  parse_method: parseMethod,\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "7990c0f1-c63a-4da8-b2de-3cc413221ddb",
+      "name": "Response Parser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2128,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Error handler\nreturn [{\n  success: false,\n  action: 'get_suggestions',\n  error: 'generation_failed',\n  message: 'Impossible de générer des suggestions',\n  suggestions: [\n    {name: \"Ndolé\", description: \"Plat national camerounais aux arachides et feuilles\"},\n    {name: \"Eru\", description: \"Spécialité du Sud-Ouest aux feuilles et water fufu\"}\n  ],\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "3b1682f1-9d08-40ff-893b-fd2416e55960",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2128,
+        160
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Request Preprocessor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChatGPT OSS:120b": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Suggestion AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Preprocessor": {
+      "main": [
+        [
+          {
+            "node": "Suggestion AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Suggestion AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Response Parser",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "734d838f-b687-4ecd-b3a3-61006ef50ce2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "93ace94098d9f9dd844138bcf4397e622c6ea8d222af8db31040119d08e72bcf"
+  },
+  "id": "C60bVIonekWy8VAE",
+  "tags": []
+}

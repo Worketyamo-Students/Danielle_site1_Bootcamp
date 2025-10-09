@@ -1,0 +1,76 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Temporary folders
+tmp/
+temp/
+
+# Build outputs
+dist/
+build/
+
+# Development files
+*.dev.js
+*.dev.css
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# Documentation artifacts (keep main README.md)
+ENHANCED_LOADER_IMPLEMENTATION.md
+TchopIA_AI_Agent_Integration_Guide.md
+PARSER_ENHANCEMENTS_SUMMARY.md
+WORKFLOW_UPDATE_SUMMARY.md
+AI_Intent_Classification_Guide.md
+ESCAPE_SEQUENCE_FIX.md
+UNIVERSAL_ESCAPE_FIX_PLAN.md
+
+# N8N backup files
+*_backup.json
+*.backup.json
+
+# Memory/development folders
+Memory/
+memory/
+dev-docs/

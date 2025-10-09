@@ -8,7 +8,7 @@
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <link rel="icon" href="./img/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="./css/index.css">
-    <script src="./js/tchopia-ai-new.js"></script>
+    <script src="./js/tchopia-ai-enhanced.js"></script>
     <title>ThopIA</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style type="text/tailwindcss">
@@ -43,6 +43,36 @@
         
         .animate-pulse {
             animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Enhanced loading states */
+        .btn-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading-overlay {
+            backdrop-filter: blur(4px);
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Button loading states */
+        button:disabled {
+            cursor: not-allowed !important;
+        }
+        
+        button.loading {
+            pointer-events: none;
         }
         
         /* Mobile responsiveness */
@@ -105,19 +135,19 @@
             
             <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 md:gap-6 mb-4">
                 <a href="./genere.html"
-                    class="font-inter text-center border rounded-[16px] text-[12px] sm:text-[14px] bg-orange-100 hover:bg-orange-200 p-2 sm:p-3 transition-colors duration-200">
-                    Générer vos recettes
+                    class="font-inter text-center border-2 border-bouton rounded-[16px] text-[12px] sm:text-[14px] bg-orange-100 hover:bg-orange-200 p-3 sm:p-4 transition-all duration-200 hover:scale-105 hover:shadow-lg">
+                    📖 Générer des recettes détaillées
                 </a>
                 <a href="./decouvre.html"
-                    class="font-inter text-center border rounded-[16px] text-[12px] sm:text-[14px] bg-orange-100 hover:bg-orange-200 p-2 sm:p-3 transition-colors duration-200">
-                    Découvrir vos plats
+                    class="font-inter text-center border-2 border-bouton rounded-[16px] text-[12px] sm:text-[14px] bg-orange-100 hover:bg-orange-200 p-3 sm:p-4 transition-all duration-200 hover:scale-105 hover:shadow-lg">
+                    🍽️ Découvrir des plats camerounais
                 </a>
             </div>
             
             <div class="flex justify-center">
                 <a href="./conseil.html"
-                    class="font-inter text-center border rounded-[16px] text-[12px] sm:text-[14px] bg-orange-100 hover:bg-orange-200 p-2 sm:p-3 transition-colors duration-200">
-                    Conseils
+                    class="font-inter text-center border-2 border-bouton rounded-[16px] text-[12px] sm:text-[14px] bg-orange-100 hover:bg-orange-200 p-3 sm:p-4 transition-all duration-200 hover:scale-105 hover:shadow-lg">
+                    💡 Obtenir des conseils culinaires
                 </a>
             </div>
         </section>
@@ -155,9 +185,12 @@
             
             <!-- Loading State -->
             <div id="loading-state" class="hidden mt-6 text-center">
-                <div class="inline-flex items-center space-x-2">
+                <div class="inline-flex items-center space-x-3 bg-orange-50 px-6 py-4 rounded-lg border border-orange-200">
                     <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-bouton"></div>
-                    <span class="font-inter text-bouton">🤔 TchopIA analyse votre demande...</span>
+                    <span class="font-inter text-bouton font-semibold">🤔 TchopIA analyse votre demande...</span>
+                </div>
+                <div class="mt-3 text-gray-600 text-sm">
+                    <p>Analyse en cours des ingrédients et préférences...</p>
                 </div>
             </div>
             
@@ -166,6 +199,14 @@
                 <div class="flex items-center">
                     <ion-icon name="alert-circle" class="text-red-500 mr-2"></ion-icon>
                     <span class="font-inter text-red-700" id="error-message">Une erreur s'est produite. Veuillez réessayer.</span>
+                </div>
+            </div>
+            
+            <!-- Success State -->
+            <div id="success-state" class="hidden mt-6 bg-green-50 border border-green-200 rounded-lg p-4 max-w-2xl mx-auto">
+                <div class="flex items-center">
+                    <ion-icon name="checkmark-circle" class="text-green-500 mr-2"></ion-icon>
+                    <span class="font-inter text-green-700" id="success-message">Demande traitée avec succès!</span>
                 </div>
             </div>
         </div>
@@ -194,10 +235,18 @@
         </div>
 
         <!-- Recipe Loading State -->
-        <div id="recipe-loading" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg p-8 text-center">
+        <div id="recipe-loading" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 loading-overlay">
+            <div class="bg-white rounded-lg p-8 text-center max-w-sm mx-4">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-bouton mx-auto mb-4"></div>
-                <p class="font-inter text-bouton">👩‍🍳 Génération de la recette en cours...</p>
+                <p class="font-inter text-bouton font-semibold">👩‍🍳 Génération de la recette en cours...</p>
+                <div class="mt-3 text-gray-600 text-sm">
+                    <p>TchopIA prépare une recette détaillée avec des ingrédients authentiques</p>
+                </div>
+                <div class="mt-4">
+                    <div class="bg-gray-200 rounded-full h-2">
+                        <div class="bg-bouton h-2 rounded-full animate-pulse" style="width: 70%"></div>
+                    </div>
+                </div>
             </div>
         </div>
 

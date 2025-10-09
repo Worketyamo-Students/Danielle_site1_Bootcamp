@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,36 +7,197 @@
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <link rel="icon" href="./img/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="./css/index.css">
-    <script src="./js/index.js"></script>
-    <title>ThopIA</title>
+    <title>TchopIA - Découvrir des Plats</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style type="text/tailwindcss">
         @theme {
-                            --color-bouton:#BA5E0D;
-                                        --font-inter:"Inter", sans-serif;
-    
-                  }
-                </style>
+            --color-bouton: #BA5E0D;
+            --font-inter: "Inter", sans-serif;
+        }
+    </style>
+    <style>
+        .suggestion-card {
+            transition: all 0.3s ease;
+            transform: translateY(0);
+        }
+        .suggestion-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(186, 94, 13, 0.15);
+        }
+        .ingredient-tag {
+            background: linear-gradient(135deg, #FED7AA 0%, #FDBA74 100%);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
 </head>
-<body class="w-screen " > 
-    <header class="w-full p-3 flex items-center justify-between sm:justify-around">
-        <p class="font-semibold text-[20px] font-inter flex">
-            <img src="./img/logo ia.jpg" alt="logo nourriture" class="w-3 rounded ">TchopIA
-        </p>
-        <ion-icon name="menu" class="sm:hidden">Menu</ion-icon>
-        <div class="sm:h-[50px] hidden sm:flex flex-row justify-around items-center ">
-            <a href="#" class="text-[16px] hover:underline hover:text-bouton px-3 font-inter">Accueil</a>
-            <a href="" class="text-[16px] hover:underline hover:text-bouton px-3 font-inter">Générateur IA</a>
-            <a href="" class="text-[16px] hover:underline hover:text-bouton px-3 font-inter">Contact</a>
+<body class="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
+    <!-- Header -->
+    <header class="w-full p-4 bg-white shadow-lg">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <img src="./img/logo ia.jpg" alt="logo TchopIA" class="w-8 h-8 rounded-full mr-3">
+                <h1 class="font-semibold text-[20px] font-inter text-gray-800">TchopIA</h1>
+            </div>
+            
+            <!-- Mobile menu button -->
+            <button id="mobile-menu-btn" class="sm:hidden">
+                <ion-icon name="menu" class="text-[24px] text-gray-700"></ion-icon>
+            </button>
+            
+            <!-- Desktop navigation -->
+            <nav class="hidden sm:flex items-center space-x-6">
+                <a href="../index.html" class="text-[16px] hover:underline hover:text-bouton font-inter transition-colors">Accueil</a>
+                <a href="./ia.html" class="text-[16px] hover:underline hover:text-bouton font-inter transition-colors">Assistant IA</a>
+                <a href="./contact.html" class="text-[16px] hover:underline hover:text-bouton font-inter transition-colors">Contact</a>
+            </nav>
+            
+            <!-- Mobile navigation menu -->
+            <nav id="mobile-menu" class="hidden sm:hidden absolute top-full left-0 w-full bg-white shadow-lg z-50">
+                <div class="flex flex-col p-4 space-y-3">
+                    <a href="../index.html" class="text-[16px] hover:text-bouton font-inter transition-colors">Accueil</a>
+                    <a href="./ia.html" class="text-[16px] hover:text-bouton font-inter transition-colors">Assistant IA</a>
+                    <a href="./contact.html" class="text-[16px] hover:text-bouton font-inter transition-colors">Contact</a>
+                </div>
+            </nav>
         </div>
     </header>
-            <a href="./ia.html" class=""><ion-icon name="arrow-back-sharp">retour</ion-icon></a>
-    <div class="relative pt-10 ">
-        <input type="text" placeholder="Entrer vos ingrédients"
-            class="font-inter text-center border rounded-[25px] text-[16px] bg-transparent p-1 w-[350px] text-left ">
-        <ion-icon name="search-sharp" class="absolute pt-2 -ml-5">recherche</ion-icon>
-    
-    </div>
-    
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        <!-- Back Button -->
+        <div class="mb-6">
+            <a href="./ia.html" class="inline-flex items-center text-bouton hover:text-orange-700 transition-colors">
+                <ion-icon name="arrow-back-sharp" class="mr-2"></ion-icon>
+                <span class="font-inter">Retour à l'Assistant IA</span>
+            </a>
+        </div>
+
+        <!-- Page Header -->
+        <div class="text-center mb-8">
+            <h2 class="font-inter font-bold text-[32px] sm:text-[40px] text-gray-800 mb-4">
+                🍽️ Découvrir des Plats Camerounais
+            </h2>
+            <p class="font-inter text-gray-600 text-[16px] sm:text-[18px] max-w-2xl mx-auto">
+                Entrez vos ingrédients, vos préférences ou vos envies pour découvrir des plats camerounais authentiques
+            </p>
+        </div>
+
+        <!-- Discovery Form -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 mb-8">
+            <form id="discovery-form" class="space-y-6">
+                <div>
+                    <label for="discovery-input" class="block font-inter font-semibold text-gray-700 mb-3 text-[16px]">
+                        🥘 Que souhaitez-vous découvrir ?
+                    </label>
+                    <textarea
+                        id="discovery-input"
+                        placeholder="Ex: J'ai des épinards et des cacahuètes... Plats avec du poisson... Cuisine du Nord Cameroun... Plats faciles à préparer..."
+                        rows="4"
+                        class="w-full font-inter border-2 border-gray-200 rounded-xl text-[16px] p-4 focus:outline-none focus:border-bouton focus:ring-2 focus:ring-orange-100 transition-all resize-none"
+                        required
+                    ></textarea>
+                </div>
+
+                <!-- Quick Discovery Options -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <button type="button" onclick="setDiscoveryQuery('Plats avec des épinards')" 
+                            class="p-3 bg-green-100 text-green-700 rounded-lg text-sm font-semibold hover:bg-green-200 transition-colors">
+                        🥬 Avec épinards
+                    </button>
+                    <button type="button" onclick="setDiscoveryQuery('Plats avec du poisson')" 
+                            class="p-3 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors">
+                        🐟 Avec poisson
+                    </button>
+                    <button type="button" onclick="setDiscoveryQuery('Plats avec des haricots')" 
+                            class="p-3 bg-red-100 text-red-700 rounded-lg text-sm font-semibold hover:bg-red-200 transition-colors">
+                        🫘 Avec haricots
+                    </button>
+                    <button type="button" onclick="setDiscoveryQuery('Plats avec de la viande')" 
+                            class="p-3 bg-purple-100 text-purple-700 rounded-lg text-sm font-semibold hover:bg-purple-200 transition-colors">
+                        🥩 Avec viande
+                    </button>
+                </div>
+
+                <!-- Regional Cuisine Options -->
+                <div>
+                    <h4 class="font-inter font-medium text-gray-700 mb-3">🗺️ Ou explorez par région :</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="setDiscoveryQuery('Cuisine du Centre Cameroun')" 
+                                class="px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm hover:bg-orange-200 transition-colors">
+                            Centre
+                        </button>
+                        <button type="button" onclick="setDiscoveryQuery('Cuisine du Nord Cameroun')" 
+                                class="px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm hover:bg-orange-200 transition-colors">
+                            Nord
+                        </button>
+                        <button type="button" onclick="setDiscoveryQuery('Cuisine de l\'Ouest Cameroun')" 
+                                class="px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm hover:bg-orange-200 transition-colors">
+                            Ouest
+                        </button>
+                        <button type="button" onclick="setDiscoveryQuery('Cuisine du Littoral Cameroun')" 
+                                class="px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm hover:bg-orange-200 transition-colors">
+                            Littoral
+                        </button>
+                        <button type="button" onclick="setDiscoveryQuery('Cuisine de l\'Est Cameroun')" 
+                                class="px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm hover:bg-orange-200 transition-colors">
+                            Est
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="discover-dishes-btn" 
+                        class="w-full bg-bouton text-white font-inter font-semibold py-4 px-6 rounded-xl text-[18px] hover:bg-orange-700 transition-all hover:scale-[1.02] shadow-lg">
+                    🔍 Découvrir des plats
+                </button>
+            </form>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="hidden text-center py-8">
+            <div class="inline-flex items-center space-x-3">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-bouton"></div>
+                <span class="font-inter text-bouton text-[18px] pulse-animation">🔍 TchopIA cherche des plats pour vous...</span>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="hidden bg-red-50 border-2 border-red-200 rounded-xl p-6 mb-8">
+            <div class="flex items-center">
+                <ion-icon name="alert-circle" class="text-red-500 mr-3 text-[24px]"></ion-icon>
+                <span class="font-inter text-red-700 text-[16px]" id="error-message">Une erreur s'est produite.</span>
+            </div>
+        </div>
+
+        <!-- Suggestions Section -->
+        <div id="suggestions-section" class="hidden">
+            <div class="text-center mb-8">
+                <h3 class="font-inter font-bold text-[28px] sm:text-[32px] text-gray-800 mb-4">
+                    🍲 Plats Découverts
+                </h3>
+                <p id="suggestions-query-display" class="font-inter text-gray-600 text-[16px]"></p>
+            </div>
+            
+            <!-- Suggestions Grid -->
+            <div id="suggestions-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Suggestions will be populated here -->
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="text-center space-y-4">
+                <button onclick="requestNewDiscovery()" 
+                        class="bg-bouton text-white px-8 py-3 rounded-xl font-inter font-semibold hover:bg-orange-700 transition-all">
+                    🔍 Nouvelle recherche
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script src="./js/tchopia-discovery.js"></script>
 </body>
 </html>

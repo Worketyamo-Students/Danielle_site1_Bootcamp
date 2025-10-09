@@ -3,76 +3,15 @@
   "nodes": [
     {
       "parameters": {
-        "model": "openai/gpt-oss-20b:free",
-        "options": {}
+        "jsCode": "// Request Validator and Preprocessor\nconst inputData = $input.all();\nconst requestBody = inputData[0].json.body || {};\n\nconsole.log('=== TchopIA Request Preprocessor ===');\nconsole.log('Raw Request:', JSON.stringify(requestBody, null, 2));\n\n// Extract request parameters\nconst query = requestBody.query || requestBody.message || '';\nconst explicitAction = requestBody.action || null;\nconst context = requestBody.context || {};\n\n// Validate request\nif (!query || query.trim().length === 0) {\n  throw new Error('Query cannot be empty');\n}\n\n// Prepare data for AI classification\nconst preprocessedData = {\n  query: query,\n  explicit_action: explicitAction,\n  has_explicit_action: !!explicitAction,\n  context: context,\n  timestamp: new Date().toISOString(),\n  session_id: inputData[0].json.headers?.['x-session-id'] || `session_${Date.now()}`,\n  user_agent: inputData[0].json.headers?.['user-agent'] || 'unknown'\n};\n\nconsole.log('Preprocessed Data:', preprocessedData);\n\nreturn [preprocessedData];"
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        5888,
-        2672
-      ],
-      "id": "9ecd1635-3d18-45a0-bb86-43dc591fda77",
-      "name": "ChatGPT",
-      "credentials": {
-        "openRouterApi": {
-          "id": "mJYBEjoa3bYekCHO",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// Request Validator and Router\nconst inputData = $input.all();\nconst requestBody = inputData[0].json.body || {};\n\nconsole.log('=== TchopIA Request Router ===');\nconsole.log('Raw Request:', JSON.stringify(requestBody, null, 2));\n\n// Extract request parameters\nconst query = requestBody.query || requestBody.message || '';\nconst explicitAction = requestBody.action || null;\nconst context = requestBody.context || {};\n\n// Validate request\nif (!query || query.trim().length === 0) {\n  throw new Error('Query cannot be empty');\n}\n\n// Determine action type\nlet determinedAction = explicitAction;\nlet confidence = 'high';\n\nif (!explicitAction) {\n  // Auto-detect action from query content\n  const queryLower = query.toLowerCase();\n  \n  // Recipe generation indicators\n  const recipeKeywords = [\n    'recette', 'comment préparer', 'comment faire', 'cuisiner',\n    'étapes', 'ingrédients pour', 'préparation de', 'cuisson',\n    'recipe', 'how to cook', 'how to make', 'prepare'\n  ];\n  \n  // Suggestion indicators\n  const suggestionKeywords = [\n    'suggère', 'propose', 'recommande', 'idée', 'quoi cuisiner',\n    'que faire avec', 'j\\'ai', 'avec ces ingrédients',\n    'suggest', 'recommend', 'what can i', 'i have'\n  ];\n  \n  // Advice indicators\n  const adviceKeywords = [\n    'conseil', 'astuce', 'technique', 'comment améliorer',\n    'pourquoi', 'meilleure façon', 'secret', 'aide',\n    'advice', 'tip', 'help', 'how to improve', 'best way'\n  ];\n  \n  if (recipeKeywords.some(kw => queryLower.includes(kw))) {\n    determinedAction = 'generate_recipe';\n    confidence = 'medium';\n  } else if (suggestionKeywords.some(kw => queryLower.includes(kw))) {\n    determinedAction = 'get_suggestions';\n    confidence = 'medium';\n  } else if (adviceKeywords.some(kw => queryLower.includes(kw))) {\n    determinedAction = 'cooking_advice';\n    confidence = 'medium';\n  } else {\n    // Default to suggestions for general queries\n    determinedAction = 'get_suggestions';\n    confidence = 'low';\n  }\n}\n\n// Prepare routing data\nconst routingData = {\n  action: determinedAction,\n  query: query,\n  confidence: confidence,\n  explicit_action: !!explicitAction,\n  context: context,\n  timestamp: new Date().toISOString(),\n  session_id: inputData[0].json.headers?.['x-session-id'] || `session_${Date.now()}`,\n  user_agent: inputData[0].json.headers?.['user-agent'] || 'unknown'\n};\n\nconsole.log('Routing Decision:', routingData);\n\nreturn [routingData];"
-      },
-      "id": "8cd20030-fa83-476e-99df-cc1cfee087a5",
-      "name": "Request Router",
+      "id": "019b3402-de5a-459f-a207-a9e2bff7c92e",
+      "name": "Request Preprocessor",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        6112,
-        2352
-      ]
-    },
-    {
-      "parameters": {
-        "sessionIdType": "customKey",
-        "sessionKey": "={{ $('Request Router').item.json.session_id }}",
-        "contextWindowLength": 10
-      },
-      "id": "80bfcee8-fd32-467e-b148-189ec816f815",
-      "name": "Conversation Memory",
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.3,
-      "position": [
-        6304,
-        2592
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Final Response Parser and Formatter\nconst inputData = $input.all();\nconst agentOutput = inputData[0].json;\n\nconsole.log('=== Final Response Parser ===');\nconsole.log('Agent Output:', JSON.stringify(agentOutput, null, 2));\n\nlet finalResponse;\n\ntry {\n  // Extract the actual response from agent output\n  let responseData = agentOutput.output || agentOutput.text || agentOutput;\n  \n  // If response is a string, try to parse as JSON\n  if (typeof responseData === 'string') {\n    try {\n      // Try to extract JSON from the string\n      const jsonMatch = responseData.match(/\\{[\\s\\S]*\\}/);\n      if (jsonMatch) {\n        responseData = JSON.parse(jsonMatch[0]);\n      }\n    } catch (parseError) {\n      console.log('String response, wrapping in structure');\n      responseData = {\n        success: true,\n        type: 'text',\n        data: { content: responseData },\n        message: 'Réponse générée'\n      };\n    }\n  }\n  \n  // Ensure response has required structure\n  if (!responseData.success && !responseData.error) {\n    responseData = {\n      success: true,\n      type: responseData.action || 'general',\n      data: responseData,\n      timestamp: new Date().toISOString()\n    };\n  }\n  \n  finalResponse = responseData;\n  \n} catch (error) {\n  console.error('Response parsing error:', error);\n  \n  finalResponse = {\n    success: false,\n    error: 'Response parsing failed',\n    message: 'Une erreur s\\'est produite lors du traitement de la réponse',\n    debug: {\n      error: error.message,\n      raw_output: JSON.stringify(agentOutput).substring(0, 500)\n    },\n    timestamp: new Date().toISOString()\n  };\n}\n\n// Add metadata\nfinalResponse.metadata = {\n  generated_at: new Date().toISOString(),\n  source: 'TchopIA AI Assistant',\n  version: '2.0',\n  session_id: $('Request Router').item.json.session_id\n};\n\nconsole.log('Final Response:', JSON.stringify(finalResponse, null, 2));\n\nreturn [finalResponse];"
-      },
-      "id": "9e71d053-e917-4a32-a5c4-7c5b4e5d7b17",
-      "name": "Response Parser",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        6752,
-        2256
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Error Handler\nconst error = $input.all()[0].json;\n\nconsole.error('=== TchopIA Error ===');\nconsole.error('Error:', error);\n\nconst errorResponse = {\n  success: false,\n  error: 'request_failed',\n  message: 'Désolé, une erreur s\\'est produite. Veuillez réessayer.',\n  suggestions: [\n    'Reformulez votre demande plus simplement',\n    'Assurez-vous que votre requête est claire',\n    'Réessayez dans quelques instants'\n  ],\n  support: {\n    error_id: `error_${Date.now()}`,\n    timestamp: new Date().toISOString()\n  },\n  metadata: {\n    source: 'TchopIA AI Assistant',\n    version: '2.0'\n  }\n};\n\nreturn [errorResponse];"
-      },
-      "id": "56be32e9-a976-4093-821d-6f721e8b5a1f",
-      "name": "Error Handler",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        6752,
-        2432
+        -3904,
+        -592
       ]
     },
     {
@@ -80,94 +19,58 @@
         "promptType": "define",
         "text": "={{ $json.query }}",
         "options": {
-          "systemMessage": "=Vous êtes TchopIA, l'assistant culinaire IA spécialisé en gastronomie camerounaise.\n\n🎯 VOTRE MISSION :\nVous avez accès à trois outils spécialisés :\n1. **Suggestion Agent** - Pour proposer des plats camerounais basés sur des ingrédients ou envies\n2. **Recipe Agent** - Pour générer des recettes complètes et détaillées\n3. **Advice Agent** - Pour donner des conseils culinaires, techniques et astuces\n\n📋 ACTION DEMANDÉE : {{ $json.action }}\n{{ $json.explicit_action ? '(Action explicitement demandée par l\\'utilisateur)' : '(Action détectée automatiquement - Confiance: ' + $json.confidence + ')' }}\n\n🔧 DIRECTIVES DE ROUTAGE :\n\n**Si action = 'get_suggestions'** :\n- Utilisez le **Suggestion Agent**\n- Transmettez la requête complète de l'utilisateur\n- L'agent retournera 3-5 suggestions de plats camerounais\n\n**Si action = 'generate_recipe'** :\n- Utilisez le **Recipe Agent**\n- Transmettez le nom du plat et tout contexte pertinent\n- L'agent générera une recette complète structurée\n\n**Si action = 'cooking_advice'** :\n- Utilisez l'**Advice Agent**\n- Transmettez la question ou problème culinaire\n- L'agent fournira des conseils détaillés et pratiques\n\n⚡ RÈGLES IMPORTANTES :\n1. Utilisez TOUJOURS l'outil approprié - ne répondez JAMAIS directement\n2. Transmettez TOUTE la requête de l'utilisateur à l'outil\n3. Ne modifiez PAS la requête avant de la transmettre\n4. Faites confiance aux agents spécialisés pour le contenu\n5. Si l'action est incertaine, privilégiez le Suggestion Agent\n\n💬 RÉPONSE ATTENDUE :\nVous devez simplement appeler l'outil approprié avec la requête complète.\nL'outil retournera une réponse JSON structurée qui sera envoyée au frontend.\n\nSession ID: {{ $json.session_id }}\nTimestamp: {{ $json.timestamp }}"
+          "systemMessage": "=Tu es un classificateur d'intentions pour TchopIA, assistant culinaire camerounais.\n\nTa mission: Analyser la requête utilisateur et déterminer l'action appropriée.\n\n🎯 ACTIONS POSSIBLES:\n1. **get_suggestions** - L'utilisateur cherche des idées de plats, des suggestions basées sur ingrédients disponibles, ou ne sait pas quoi cuisiner\n2. **generate_recipe** - L'utilisateur demande explicitement une recette complète, les étapes de préparation d'un plat spécifique\n3. **cooking_advice** - L'utilisateur demande des conseils, astuces, techniques, ou aide pour résoudre un problème culinaire\n\n📋 EXEMPLES DE CLASSIFICATION:\n\n**get_suggestions**:\n- \"J'ai du poulet, des poivrons et des oignons. Que puis-je cuisiner?\"\n- \"Suggère-moi des plats camerounais pour ce soir\"\n- \"Quels plats typiques du Cameroun puis-je faire?\"\n- \"Je veux découvrir la cuisine camerounaise\"\n\n**generate_recipe**:\n- \"Comment préparer le Ndolé?\"\n- \"Donne-moi la recette complète du Poulet DG\"\n- \"Quelles sont les étapes pour faire l'Eru?\"\n- \"Je veux cuisiner du Koki, comment faire?\"\n\n**cooking_advice**:\n- \"Comment rendre mes beignets plus moelleux?\"\n- \"Pourquoi mon Ndolé est trop amer?\"\n- \"Quelle est la meilleure technique pour griller le poisson?\"\n- \"Comment conserver le plantain mûr?\"\n\n⚡ RÈGLES DE CLASSIFICATION:\n1. Si action explicite fournie ({{ $json.has_explicit_action ? 'OUI: ' + $json.explicit_action : 'NON' }}), utilise-la\n2. Sinon, analyse le contexte et l'intention\n3. Par défaut en cas de doute: get_suggestions\n4. Sois confiant dans ta décision\n\n📤 RÉPONSE ATTENDUE (JSON STRICT):\nRéponds UNIQUEMENT avec ce format JSON, rien d'autre:\n{\n  \"action\": \"get_suggestions\" | \"generate_recipe\" | \"cooking_advice\",\n  \"confidence\": \"high\" | \"medium\" | \"low\",\n  \"reasoning\": \"Courte explication (1 phrase)\"\n}\n\nRequête utilisateur: {{ $json.query }}"
         }
       },
-      "id": "ab8928ac-9e87-4251-b6e4-98b4041877ca",
-      "name": "Tchop AI1",
+      "id": "4ecca1cf-1317-4244-81c6-021e7c0f0692",
+      "name": "Intent Classifier AI",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2.2,
       "position": [
-        6336,
-        2352
+        -3664,
+        -592
       ],
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "description": "Appel cet outil quand l'utilisateur demande des suggestions de plats camerounais, des idées de recettes, ou quand il mentionne des ingrédients disponibles. Transmet TOUTE la requête de l'utilisateur telle quelle.",
-        "workflowId": {
-          "__rl": true,
-          "value": "C60bVIonekWy8VAE",
-          "mode": "list",
-          "cachedResultName": "suggestion_generator"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "query": "={{ $json.query }}"
-          }
-        }
+        "jsCode": "// Classification Result Parser\nconst inputData = $input.all();\nconst classifierResponse = inputData[0].json;\n\nconsole.log('=== Intent Classification Result ===');\nconsole.log('Raw Response:', JSON.stringify(classifierResponse, null, 2));\n\n// Extract classification from AI response\nlet classification = {\n  action: 'get_suggestions',\n  confidence: 'low',\n  reasoning: 'Default fallback'\n};\n\nconst responseText = classifierResponse.output || classifierResponse.text || JSON.stringify(classifierResponse);\n\n// Try to parse JSON response\ntry {\n  // Look for JSON object in response\n  const jsonMatch = responseText.match(/\\{[\\s\\S]*?\"action\"[\\s\\S]*?\\}/);\n  if (jsonMatch) {\n    const parsed = JSON.parse(jsonMatch[0]);\n    if (parsed.action && ['get_suggestions', 'generate_recipe', 'cooking_advice'].includes(parsed.action)) {\n      classification = parsed;\n    }\n  }\n} catch (e) {\n  console.error('JSON parsing failed:', e);\n}\n\n// Validate and use explicit action if available\nconst preprocessorData = $('Request Preprocessor').item.json;\nif (preprocessorData.has_explicit_action && preprocessorData.explicit_action) {\n  classification.action = preprocessorData.explicit_action;\n  classification.confidence = 'high';\n  classification.reasoning = 'Action explicitement fournie par l\\'utilisateur';\n}\n\n// Prepare final routing data\nconst routingData = {\n  action: classification.action,\n  query: preprocessorData.query,\n  confidence: classification.confidence,\n  reasoning: classification.reasoning,\n  classification_method: preprocessorData.has_explicit_action ? 'explicit' : 'ai_classified',\n  explicit_action: preprocessorData.has_explicit_action,\n  context: preprocessorData.context,\n  timestamp: preprocessorData.timestamp,\n  session_id: preprocessorData.session_id,\n  user_agent: preprocessorData.user_agent\n};\n\nconsole.log('Final Routing Decision:', routingData);\n\nreturn [routingData];"
       },
-      "id": "ff1b6af4-76bd-4ef0-8223-590a0138f992",
-      "name": "Suggestion Agent1",
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
+      "id": "f3173050-0e21-434e-86fd-0c4bc8230fe8",
+      "name": "Classification Parser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        6320,
-        2912
+        -3296,
+        -608
       ]
     },
     {
       "parameters": {
-        "description": "Appel cet outil quand l'utilisateur demande explicitement une recette complète, des instructions de préparation détaillées, ou comment cuisiner un plat spécifique. Transmet le nom du plat et tout contexte pertinent.",
-        "workflowId": {
-          "__rl": true,
-          "value": "coNDPEfojluaHvhC",
-          "mode": "list",
-          "cachedResultName": "recipe_generator"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "query": "={{ $json.query }}",
-            "recipe_name": "={{ $json.context.recipe_name || '' }}",
-            "recipe_description": "={{ $json.context.description || '' }}"
-          }
-        }
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Classification Parser').item.json.session_id }}",
+        "contextWindowLength": 10
       },
-      "id": "5127b6c8-3360-4af9-9f62-709cba68d20f",
-      "name": "Recipe Agent1",
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
+      "id": "027c1a84-d1ac-41ca-bb02-2eb98a3b7dc2",
+      "name": "Conversation Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
       "position": [
-        6464,
-        2912
+        -3056,
+        -384
       ]
     },
     {
       "parameters": {
-        "description": "Appel cet outil quand l'utilisateur demande des conseils culinaires, des astuces de cuisine, des techniques de préparation, ou des solutions à des problèmes culinaires. Transmet toute la question ou problématique.",
-        "workflowId": {
-          "__rl": true,
-          "value": "uMFHRt7rGUhqHNwU",
-          "mode": "list",
-          "cachedResultName": "advice_generator"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "query": "={{ $json.query }}"
-          }
-        }
+        "jsCode": "// Error Handler\nconst error = $input.all()[0].json;\n\nconsole.error('=== TchopIA Error ===');\nconsole.error('Error:', error);\n\nconst errorResponse = {\n  success: false,\n  error: 'request_failed',\n  message: 'Désolé, une erreur s\\'est produite. Veuillez réessayer.',\n  suggestions: [\n    'Reformulez votre demande plus simplement',\n    'Assurez-vous que votre requête est claire',\n    'Réessayez dans quelques instants'\n  ],\n  support: {\n    error_id: `error_${Date.now()}`,\n    timestamp: new Date().toISOString()\n  },\n  metadata: {\n    source: 'TchopIA AI Assistant',\n    version: '2.0'\n  }\n};\n\nreturn [errorResponse];"
       },
-      "id": "782b6554-eec2-4429-adc2-2821684cbec5",
-      "name": "Advice Agent1",
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
+      "id": "380f4441-2be2-42d4-9562-221f9cc58161",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        6656,
-        2912
+        -1968,
+        -112
       ]
     },
     {
@@ -189,36 +92,14 @@
           }
         }
       },
-      "id": "3e282460-28ee-4e3d-a473-d597083279f6",
+      "id": "3b53561a-6700-4534-bbd8-609ecce0fcb4",
       "name": "Webhook Response1",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        7040,
-        2336
+        -1312,
+        -416
       ]
-    },
-    {
-      "parameters": {},
-      "type": "@n8n/n8n-nodes-langchain.toolThink",
-      "typeVersion": 1.1,
-      "position": [
-        6992,
-        2688
-      ],
-      "id": "1e3214e3-9a11-47da-9662-9ef0909fb8d4",
-      "name": "Think1"
-    },
-    {
-      "parameters": {},
-      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
-      "typeVersion": 1,
-      "position": [
-        6832,
-        2688
-      ],
-      "id": "279dedab-a11d-4b8e-9ac1-48c0d53c84d3",
-      "name": "Calculator1"
     },
     {
       "parameters": {
@@ -229,35 +110,372 @@
           "allowedOrigins": "*"
         }
       },
-      "id": "d523e93e-0842-4683-b7d8-85adf78138d8",
+      "id": "ec1d2c2b-3803-42b5-9ef3-a4b9e69ea7fb",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
-        5888,
-        2352
+        -4144,
+        -592
       ],
       "webhookId": "tchopia-ai"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -3600,
+        16
+      ],
+      "id": "b4f9c719-ec11-434a-b3d2-7c63700c7199",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "5CyEI7TlelUpYDI1",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Classification Parser').item.json.action }}",
+                    "rightValue": "get_suggestions",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f26d2793-4662-49ac-92ba-5fa56501dc8f"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "194f05f9-df29-42f0-8f0d-f885f7549bd3",
+                    "leftValue": "={{ $('Classification Parser').item.json.action }}",
+                    "rightValue": "cooking_advice",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5710f3ca-b065-493a-8c6f-40f6f3a74fea",
+                    "leftValue": "={{ $('Classification Parser').item.json.action }}",
+                    "rightValue": "generate_recipe",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -2384,
+        -560
+      ],
+      "id": "33302808-57c0-4cfc-bb40-15804485a13c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🔧 ENHANCED Suggestions Response Parser\nconst inputData = $input.all();\nconst aiResponse = inputData[0].json;\n\nconsole.log('=== Suggestions Parser - Main Workflow ===');\nconsole.log('Input Type:', typeof aiResponse);\n\nlet responseText = '';\nlet suggestions = [];\nlet parseMethod = 'unknown';\nlet rawData = aiResponse;\n\n// Enhanced data extraction from various response formats\nif (aiResponse.data && typeof aiResponse.data === 'object') {\n  // Tool workflow response format\n  rawData = aiResponse.data;\n  console.log('Extracted data from tool response');\n}\n\nif (rawData.output) responseText = rawData.output;\nelse if (rawData.text) responseText = rawData.text;\nelse if (rawData.suggestions) {\n  // Direct suggestions object from sub-workflow\n  suggestions = Array.isArray(rawData.suggestions) ? rawData.suggestions : [];\n  parseMethod = 'direct_object';\n  console.log('Found direct suggestions array:', suggestions.length);\n}\nelse responseText = JSON.stringify(rawData);\n\n// Method 1: Direct JSON array parsing\nif (suggestions.length === 0 && responseText) {\n  try {\n    const jsonArrayMatch = responseText.match(/\\[\\s*\\{[\\s\\S]*?\"name\"[\\s\\S]*?\\}\\s*\\]/g);\n    if (jsonArrayMatch) {\n      const parsed = JSON.parse(jsonArrayMatch[jsonArrayMatch.length - 1]);\n      if (Array.isArray(parsed) && parsed.length > 0) {\n        suggestions = parsed;\n        parseMethod = 'json_array';\n        console.log('Parsed JSON array:', suggestions.length);\n      }\n    }\n  } catch (e) {\n    console.log('JSON array parse failed:', e.message);\n  }\n}\n\n// Method 2: Nested suggestions object\nif (suggestions.length === 0 && responseText) {\n  try {\n    const objectMatch = responseText.match(/\\{[\\s\\S]*?\"suggestions\"\\s*:\\s*\\[[\\s\\S]*?\\][\\s\\S]*?\\}/);\n    if (objectMatch) {\n      const parsed = JSON.parse(objectMatch[0]);\n      if (parsed.suggestions && Array.isArray(parsed.suggestions)) {\n        suggestions = parsed.suggestions;\n        parseMethod = 'nested_object';\n        console.log('Found nested suggestions:', suggestions.length);\n      }\n    }\n  } catch (e) {\n    console.log('Nested object parse failed:', e.message);\n  }\n}\n\n// Method 3: Markdown code block\nif (suggestions.length === 0 && responseText) {\n  try {\n    const codeBlocks = responseText.match(/```(?:json)?\\s*([\\s\\S]*?)```/g);\n    if (codeBlocks) {\n      for (const block of codeBlocks) {\n        const content = block.replace(/```(?:json)?\\s*|```/g, '').trim();\n        const parsed = JSON.parse(content);\n        if (Array.isArray(parsed)) {\n          suggestions = parsed;\n          parseMethod = 'markdown_array';\n          break;\n        } else if (parsed.suggestions) {\n          suggestions = parsed.suggestions;\n          parseMethod = 'markdown_object';\n          break;\n        }\n      }\n      console.log('Parsed from markdown:', suggestions.length);\n    }\n  } catch (e) {\n    console.log('Markdown parse failed:', e.message);\n  }\n}\n\n// Method 4: Markdown table extraction\nif (suggestions.length === 0 && responseText) {\n  const tableMatch = responseText.match(/\\|\\s*(?:Plat|Nom|Name)[\\s\\S]*?\\|[\\s\\S]*?\\n([\\s\\S]*?)(?:\\n\\n|$)/);\n  if (tableMatch) {\n    const rows = tableMatch[1].split('\\n').filter(line => line.trim().startsWith('|'));\n    suggestions = rows.map(row => {\n      const cells = row.split('|').map(c => c.trim()).filter(c => c);\n      if (cells.length >= 2) {\n        return {\n          name: cells[0].replace(/\\*\\*|__/g, '').trim(),\n          description: cells[1].replace(/\\*\\*|__/g, '').trim()\n        };\n      }\n    }).filter(s => s && s.name);\n    \n    if (suggestions.length > 0) {\n      parseMethod = 'markdown_table';\n      console.log('Extracted from table:', suggestions.length);\n    }\n  }\n}\n\n// Method 5: Line-by-line numbered list extraction\nif (suggestions.length === 0 && responseText) {\n  const lines = responseText.split('\\n').filter(l => l.trim());\n  const patterns = [\n    /^\\d+\\.\\s*(?:\\*\\*)?([^*\\-:]+?)(?:\\*\\*)?\\s*[-:–]\\s*(.+)$/,\n    /^\\*\\s*(?:\\*\\*)?([^*\\-:]+?)(?:\\*\\*)?\\s*[-:–]\\s*(.+)$/,\n    /^-\\s*(?:\\*\\*)?([^*\\-:]+?)(?:\\*\\*)?\\s*[-:–]\\s*(.+)$/\n  ];\n  \n  for (const line of lines) {\n    for (const pattern of patterns) {\n      const match = line.match(pattern);\n      if (match && match[1] && match[2]) {\n        suggestions.push({\n          name: match[1].trim(),\n          description: match[2].trim()\n        });\n        break;\n      }\n    }\n  }\n  \n  if (suggestions.length > 0) {\n    parseMethod = 'line_extraction';\n    console.log('Extracted from lines:', suggestions.length);\n  }\n}\n\n// Fallback: High-quality default suggestions\nif (suggestions.length === 0) {\n  suggestions = [\n    {name: \"Ndolé\", description: \"Plat national du Cameroun avec feuilles d'aité marinées dans une sauce crémeuse d'arachides grillées, enrichie de viande et crevettes fumées - Un délice de la région du Centre\"},\n    {name: \"Eru\", description: \"Spécialité traditionnelle du Sud-Ouest aux feuilles d'eru finement ciselées, mélangées au water fufu, viande et crayfish pour une texture filante unique\"},\n    {name: \"Poulet DG (Directeur Général)\", description: \"Version moderne et festive de poulet sauté aux légumes colorés, plantains dorés et épices, devenu incontournable des grandes célébrations\"},\n    {name: \"Koki\", description: \"Gâteau de haricots blancs moulus à la vapeur dans des feuilles de bananier, spécialité de l'Ouest parfumée aux épices et huile de palme\"},\n    {name: \"Achu Soup\", description: \"Soupe jaune onctueuse du Nord-Ouest à base de limestone et huile de palme, accompagnée de boulettes de coco-yam pilées\"}\n  ];\n  parseMethod = 'fallback';\n  console.log('Using enhanced fallback suggestions');\n}\n\n// Enhanced validation and cleaning\nsuggestions = suggestions\n  .filter(s => s && s.name && s.description)\n  .filter(s => s.name.trim().length > 0 && s.description.trim().length > 10)\n  .slice(0, 5)\n  .map((s, index) => ({\n    id: `suggestion_${Date.now()}_${index}`,\n    name: s.name.replace(/[*_#`]/g, '').trim(),\n    description: s.description.replace(/[*_`]/g, '').trim(),\n    category: s.category || 'Cuisine Camerounaise',\n    region: s.region || null\n  }));\n\nconsole.log('Final suggestions count:', suggestions.length);\nconsole.log('Parse method:', parseMethod);\n\nreturn [{\n  success: true,\n  action: 'get_suggestions',\n  data_type: 'suggestions',\n  suggestions: suggestions,\n  count: suggestions.length,\n  parse_method: parseMethod,\n  timestamp: new Date().toISOString(),\n  metadata: {\n    source: 'main_workflow_parser',\n    quality: parseMethod === 'fallback' ? 'default' : 'ai_generated'\n  }\n}];"
+      },
+      "id": "55a2b6c1-7b8d-4032-920e-2d95233dcdf6",
+      "name": "Gets suggestions Parser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1968,
+        -704
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🔧 ENHANCED Cooking Advice Response Parser\nconst inputData = $input.all();\nconst aiResponse = inputData[0].json;\n\nconsole.log('=== Advice Parser - Main Workflow ===');\nconsole.log('Input Type:', typeof aiResponse);\n\nlet responseText = '';\nlet advice = null;\nlet parseMethod = 'unknown';\nlet rawData = aiResponse;\n\n// Enhanced data extraction from various response formats\nif (aiResponse.data && typeof aiResponse.data === 'object') {\n  rawData = aiResponse.data;\n  console.log('Extracted data from tool response');\n}\n\nif (rawData.output) responseText = rawData.output;\nelse if (rawData.text) responseText = rawData.text;\nelse if (rawData.advice && typeof rawData.advice === 'object') {\n  advice = rawData.advice;\n  parseMethod = 'direct_object';\n  console.log('Found direct advice object');\n}\nelse responseText = JSON.stringify(rawData);\n\n// Method 1: Direct JSON object with advice_type\nif (!advice && responseText) {\n  try {\n    const jsonMatch = responseText.match(/\\{[\\s\\S]*?\"advice_type\"[\\s\\S]*?\\}/);\n    if (jsonMatch) {\n      const parsed = JSON.parse(jsonMatch[0]);\n      if (parsed.advice_type || parsed.main_advice) {\n        advice = parsed;\n        parseMethod = 'direct_json';\n        console.log('Parsed advice JSON');\n      }\n    }\n  } catch (e) {\n    console.log('Direct JSON parse failed:', e.message);\n  }\n}\n\n// Method 2: Nested advice object\nif (!advice && responseText) {\n  try {\n    const objectMatch = responseText.match(/\\{[\\s\\S]*?\"advice\"\\s*:\\s*\\{[\\s\\S]*?\\}[\\s\\S]*?\\}/);\n    if (objectMatch) {\n      const parsed = JSON.parse(objectMatch[0]);\n      if (parsed.advice && typeof parsed.advice === 'object') {\n        advice = parsed.advice;\n        parseMethod = 'nested_object';\n        console.log('Found nested advice object');\n      }\n    }\n  } catch (e) {\n    console.log('Nested object parse failed:', e.message);\n  }\n}\n\n// Method 3: Markdown code blocks\nif (!advice && responseText) {\n  try {\n    const codeBlocks = responseText.match(/```(?:json)?\\s*([\\s\\S]*?)```/g);\n    if (codeBlocks) {\n      for (const block of codeBlocks) {\n        const content = block.replace(/```(?:json)?\\s*|```/g, '').trim();\n        const parsed = JSON.parse(content);\n        if (parsed.advice_type || parsed.main_advice) {\n          advice = parsed;\n          parseMethod = 'markdown_json';\n          console.log('Parsed from markdown block');\n          break;\n        } else if (parsed.advice) {\n          advice = parsed.advice;\n          parseMethod = 'markdown_nested';\n          break;\n        }\n      }\n    }\n  } catch (e) {\n    console.log('Markdown parse failed:', e.message);\n  }\n}\n\n// Method 4: Structured text parsing\nif (!advice && responseText) {\n  const structuredAdvice = {\n    advice_type: 'Général',\n    main_advice: '',\n    quick_tips: [],\n    traditional_secrets: [],\n    ingredients_focus: {\n      recommended: [],\n      substitutes: [],\n      avoid: []\n    },\n    step_by_step: [],\n    cultural_context: '',\n    common_mistakes: [],\n    seasonal_notes: '',\n    difficulty_level: 'Intermédiaire',\n    estimated_time: 'Variable'\n  };\n\n  // Extract main advice\n  const sections = responseText.split(/\\n\\n+/);\n  if (sections.length > 0) {\n    structuredAdvice.main_advice = sections[0].substring(0, 800);\n  }\n\n  // Extract tips\n  const tipsMatch = responseText.match(/(?:Astuce|Conseil|Tips?)\\s*:?\\s*\\n?([\\s\\S]*?)(?:\\n\\n|$)/i);\n  if (tipsMatch) {\n    structuredAdvice.quick_tips = tipsMatch[1]\n      .split(/\\n/)\n      .filter(line => line.trim().match(/^[-*•]|^\\d+\\./)) \n      .map(line => line.replace(/^[-*•]|^\\d+\\./, '').trim())\n      .filter(tip => tip.length > 10)\n      .slice(0, 5);\n  }\n\n  // Extract secrets\n  const secretsMatch = responseText.match(/(?:Secret|Tradition)\\s*:?\\s*\\n?([\\s\\S]*?)(?:\\n\\n|$)/i);\n  if (secretsMatch) {\n    structuredAdvice.traditional_secrets = secretsMatch[1]\n      .split(/\\n/)\n      .filter(line => line.trim().match(/^[-*•]|^\\d+\\./)) \n      .map(line => line.replace(/^[-*•]|^\\d+\\./, '').trim())\n      .filter(s => s.length > 10)\n      .slice(0, 3);\n  }\n\n  if (structuredAdvice.main_advice || structuredAdvice.quick_tips.length > 0) {\n    advice = structuredAdvice;\n    parseMethod = 'text_extraction';\n    console.log('Extracted from structured text');\n  }\n}\n\n// Enhanced fallback with comprehensive default advice\nif (!advice) {\n  const query = rawData.query || 'question culinaire';\n  advice = {\n    advice_type: 'Général',\n    main_advice: `Pour réussir vos plats camerounais, voici quelques conseils essentiels basés sur les traditions culinaires de nos régions. L'utilisation d'ingrédients frais et locaux est primordiale pour obtenir des saveurs authentiques. Les épices doivent être bien dosées pour respecter l'équilibre des goûts. La patience durant la cuisson permet aux saveurs de bien se développer. N'hésitez pas à adapter les recettes selon les ingrédients disponibles tout en gardant l'esprit de la tradition.`,\n    quick_tips: [\n      \"Utiliser des ingrédients frais et de saison pour une meilleure qualité\",\n      \"Respecter les temps de cuisson traditionnels pour développer les saveurs\",\n      \"Doser progressivement les épices et goûter régulièrement\",\n      \"Préparer certains ingrédients la veille pour gagner du temps\",\n      \"Conserver les restes au réfrigérateur dans des contenants hermétiques\"\n    ],\n    traditional_secrets: [\n      \"Le secret des grands-mères: laisser mijoter à feu doux pour concentrer les arômes\",\n      \"Moudre les épices fraîches juste avant utilisation pour plus de parfum\",\n      \"Utiliser l'huile de palme authentique pour le goût traditionnel\"\n    ],\n    ingredients_focus: {\n      recommended: [\"Épices locales fraîches\", \"Légumes de saison\", \"Huile de palme rouge\", \"Piment frais\"],\n      substitutes: [\"Beurre de cacahuète pour l'huile d'arachide\", \"Épinards pour certaines feuilles traditionnelles\"],\n      avoid: [\"Ingrédients transformés industriellement\", \"Épices périmées\"]\n    },\n    step_by_step: [\n      {step: 1, action: \"Préparer et laver tous les ingrédients\", tip: \"Organiser son espace de travail facilite la cuisine\"},\n      {step: 2, action: \"Respecter l'ordre d'incorporation des ingrédients\", tip: \"Certains ingrédients nécessitent plus de temps de cuisson\"},\n      {step: 3, action: \"Goûter et ajuster l'assaisonnement progressivement\", tip: \"Il est plus facile d'ajouter que de retirer des épices\"}\n    ],\n    cultural_context: \"La cuisine camerounaise est riche et diversifiée, reflétant les traditions de plus de 250 ethnies. Chaque région a ses spécialités et techniques transmises de génération en génération.\",\n    common_mistakes: [\n      \"Ne pas laisser mijoter assez longtemps - Solution: Respecter les temps de cuisson indiqués\",\n      \"Mettre trop d'épices d'un coup - Solution: Ajouter progressivement en goûtant\",\n      \"Utiliser des ingrédients de mauvaise qualité - Solution: Privilégier le frais et local\"\n    ],\n    seasonal_notes: \"Adapter les recettes selon la disponibilité des ingrédients de saison pour un meilleur résultat et respect de la tradition\",\n    difficulty_level: \"Intermédiaire\",\n    estimated_time: \"Variable selon le plat (30 min à 2h)\"\n  };\n  parseMethod = 'enhanced_fallback';\n  console.log('Using enhanced fallback advice');\n}\n\n// Validation and enhancement\nif (advice) {\n  // Ensure all required fields\n  advice.advice_type = advice.advice_type || 'Général';\n  advice.main_advice = advice.main_advice || advice.main || 'Conseil culinaire traditionnel camerounais';\n  advice.quick_tips = Array.isArray(advice.quick_tips) ? advice.quick_tips : [];\n  advice.traditional_secrets = Array.isArray(advice.traditional_secrets) ? advice.traditional_secrets : [];\n  advice.common_mistakes = Array.isArray(advice.common_mistakes) ? advice.common_mistakes : [];\n  \n  // Ensure ingredients_focus structure\n  if (!advice.ingredients_focus || typeof advice.ingredients_focus !== 'object') {\n    advice.ingredients_focus = {\n      recommended: [],\n      substitutes: [],\n      avoid: []\n    };\n  }\n  \n  // Add metadata\n  advice.generated_at = new Date().toISOString();\n  advice.language = 'fr';\n}\n\nconsole.log('Final advice parsed successfully');\nconsole.log('Parse method:', parseMethod);\n\nreturn [{\n  success: true,\n  action: 'cooking_advice',\n  data_type: 'advice',\n  advice: advice,\n  parse_method: parseMethod,\n  timestamp: new Date().toISOString(),\n  metadata: {\n    source: 'main_workflow_parser',\n    quality: parseMethod.includes('fallback') ? 'default' : 'ai_generated',\n    has_structured_data: !!(advice.step_by_step && advice.step_by_step.length > 0)\n  }\n}];"
+      },
+      "id": "14eae05e-067a-4e51-b2b0-dc79e0f51fd6",
+      "name": "Cooking Advice Parser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1968,
+        -496
+      ]
+    },
+    {
+      "parameters": {
+        "description": "Appel cet outil quand l'utilisateur demande des suggestions de plats camerounais, des idées de recettes, ou quand il mentionne des ingrédients disponibles. Transmet TOUTE la requête de l'utilisateur telle quelle.",
+        "workflowId": {
+          "__rl": true,
+          "value": "C60bVIonekWy8VAE",
+          "mode": "list",
+          "cachedResultName": "suggestion_generator"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $json.query }}"
+          }
+        }
+      },
+      "id": "c0c33c1f-e9a1-4c60-9cec-9321ace8d1ec",
+      "name": "Suggestion Agent",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -3184,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "description": "Appel cet outil quand l'utilisateur demande explicitement une recette complète, des instructions de préparation détaillées, ou comment cuisiner un plat spécifique. Transmet le nom du plat et tout contexte pertinent.",
+        "workflowId": {
+          "__rl": true,
+          "value": "coNDPEfojluaHvhC",
+          "mode": "list",
+          "cachedResultName": "recipe_generator"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $json.query }}",
+            "recipe_name": "={{ $json.context.recipe_name || '' }}",
+            "recipe_description": "={{ $json.context.description || '' }}"
+          }
+        }
+      },
+      "id": "1e5e4205-0593-4c61-a5e9-7565b0c12253",
+      "name": "Recipe Agent",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -3008,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "description": "Appel cet outil quand l'utilisateur demande des conseils culinaires, des astuces de cuisine, des techniques de préparation, ou des solutions à des problèmes culinaires. Transmet toute la question ou problématique.",
+        "workflowId": {
+          "__rl": true,
+          "value": "uMFHRt7rGUhqHNwU",
+          "mode": "list",
+          "cachedResultName": "advice_generator"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $json.query }}"
+          }
+        }
+      },
+      "id": "ac19d57c-0263-4c22-8e97-28a8e2972a90",
+      "name": "Advice Agent",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -2832,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🔧 ENHANCED Recipe Response Parser\nconst inputData = $input.all();\nconst aiResponse = inputData[0].json;\n\nconsole.log('=== Recipe Parser - Main Workflow ===');\nconsole.log('Input Type:', typeof aiResponse);\n\nlet responseText = '';\nlet recipe = null;\nlet parseMethod = 'unknown';\nlet rawData = aiResponse;\n\n// Enhanced data extraction from various response formats\nif (aiResponse.data && typeof aiResponse.data === 'object') {\n  rawData = aiResponse.data;\n  console.log('Extracted data from tool response');\n}\n\nif (rawData.output) responseText = rawData.output;\nelse if (rawData.text) responseText = rawData.text;\nelse if (rawData.recipe && typeof rawData.recipe === 'object') {\n  recipe = rawData.recipe;\n  parseMethod = 'direct_object';\n  console.log('Found direct recipe object');\n}\nelse responseText = JSON.stringify(rawData);\n\n// Method 1: Direct JSON object with recipe structure\nif (!recipe && responseText) {\n  try {\n    const jsonMatch = responseText.match(/\\{[\\s\\S]*?\"name\"[\\s\\S]*?\"ingredients\"[\\s\\S]*?\\}/);\n    if (jsonMatch) {\n      const parsed = JSON.parse(jsonMatch[0]);\n      if (parsed.name && (parsed.ingredients || parsed.instructions)) {\n        recipe = parsed;\n        parseMethod = 'direct_json';\n        console.log('Parsed recipe JSON');\n      }\n    }\n  } catch (e) {\n    console.log('Direct JSON parse failed:', e.message);\n  }\n}\n\n// Method 2: Nested recipe object\nif (!recipe && responseText) {\n  try {\n    const objectMatch = responseText.match(/\\{[\\s\\S]*?\"recipe\"\\s*:\\s*\\{[\\s\\S]*?\\}[\\s\\S]*?\\}/);\n    if (objectMatch) {\n      const parsed = JSON.parse(objectMatch[0]);\n      if (parsed.recipe && typeof parsed.recipe === 'object') {\n        recipe = parsed.recipe;\n        parseMethod = 'nested_object';\n        console.log('Found nested recipe object');\n      }\n    }\n  } catch (e) {\n    console.log('Nested object parse failed:', e.message);\n  }\n}\n\n// Method 3: Markdown code blocks\nif (!recipe && responseText) {\n  try {\n    const codeBlocks = responseText.match(/```(?:json)?\\s*([\\s\\S]*?)```/g);\n    if (codeBlocks) {\n      for (const block of codeBlocks) {\n        const content = block.replace(/```(?:json)?\\s*|```/g, '').trim();\n        const parsed = JSON.parse(content);\n        if (parsed.name && (parsed.ingredients || parsed.instructions)) {\n          recipe = parsed;\n          parseMethod = 'markdown_json';\n          console.log('Parsed from markdown block');\n          break;\n        } else if (parsed.recipe) {\n          recipe = parsed.recipe;\n          parseMethod = 'markdown_nested';\n          break;\n        }\n      }\n    }\n  } catch (e) {\n    console.log('Markdown parse failed:', e.message);\n  }\n}\n\n// Enhanced fallback with comprehensive default recipe\nif (!recipe) {\n  const dishName = rawData.query || rawData.dish_name || 'Plat Camerounais';\n  recipe = {\n    name: dishName,\n    description: \"Recette traditionnelle camerounaise authentique combinant ingrédients locaux et techniques transmises de génération en génération.\",\n    region: 'Cameroun',\n    difficulty: 'Moyen',\n    prep_time: 30,\n    cook_time: 60,\n    servings: '4-6 personnes',\n    ingredients: [\n      {item: \"Ingrédients traditionnels\", quantity: \"Selon recette\", notes: \"Utiliser produits frais et locaux\"},\n      {item: \"Épices camerounaises\", quantity: \"Au goût\", notes: \"Doser progressivement\"}\n    ],\n    instructions: [\n      {step: 1, action: \"Préparer et nettoyer tous les ingrédients\", time: \"15 min\", tips: \"Organisation facilite la cuisson\"},\n      {step: 2, action: \"Suivre les méthodes traditionnelles de cuisson\", time: \"Variable\", tips: \"Patience pour développer les saveurs\"}\n    ],\n    tips: [\"Utiliser ingrédients frais\", \"Respecter temps de cuisson\"],\n    cultural_notes: \"Plat traditionnel camerounais\",\n    nutritional_highlights: \"Riche en saveurs et nutriments\"\n  };\n  parseMethod = 'enhanced_fallback';\n  console.log('Using enhanced fallback recipe');\n}\n\n// Enhanced validation and formatting\nif (recipe) {\n  recipe.name = recipe.name || 'Plat Camerounais';\n  recipe.description = recipe.description || 'Recette traditionnelle';\n  recipe.prep_time = parseInt(recipe.prep_time) || 30;\n  recipe.cook_time = parseInt(recipe.cook_time) || 60;\n  recipe.total_time = recipe.prep_time + recipe.cook_time;\n  recipe.ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];\n  recipe.instructions = Array.isArray(recipe.instructions) ? recipe.instructions : [];\n  recipe.generated_at = new Date().toISOString();\n}\n\nconsole.log('Final recipe parsed successfully');\nconsole.log('Parse method:', parseMethod);\n\nreturn [{\n  success: true,\n  action: 'generate_recipe',\n  data_type: 'recipe',\n  recipe: recipe,\n  parse_method: parseMethod,\n  timestamp: new Date().toISOString(),\n  metadata: {\n    source: 'main_workflow_parser',\n    quality: parseMethod.includes('fallback') ? 'default' : 'ai_generated'\n  }\n}];"
+      },
+      "id": "87d0cf31-ddde-42a9-a6c6-61c518cf1842",
+      "name": "Generate Recipe Parser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1968,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# ChatGPT OSS:120b",
+        "height": 192,
+        "width": 288,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3808,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "71f00000-7b8e-4d28-8aff-5e6d909203a0",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Child Agents",
+        "height": 208,
+        "width": 528,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3232,
+        80
+      ],
+      "id": "ba8c34e2-861c-46cd-a3f3-3088cf1e5895",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        -2768,
+        -448
+      ],
+      "id": "a594fb68-c2c8-49fe-838a-6ccbc3879c62",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=Vous êtes TchopIA, l'assistant culinaire IA spécialisé en gastronomie camerounaise.\n\n🎯 VOTRE MISSION :\nVous avez accès à trois outils spécialisés :\n1. **Suggestion Agent** - Pour proposer des plats camerounais basés sur des ingrédients ou envies\n2. **Recipe Agent** - Pour générer des recettes complètes et détaillées\n3. **Advice Agent** - Pour donner des conseils culinaires, techniques et astuces\n\n📋 ACTION DÉTECTÉE : {{ $json.action }}\nConfiance de classification: {{ $json.confidence }}\nMéthode: {{ $json.classification_method === 'explicit' ? 'Action explicite utilisateur' : 'Classification AI automatique' }}\nRaisonnement: {{ $json.reasoning }}\n\n🔧 DIRECTIVES DE ROUTAGE :\n\n**Si action = 'get_suggestions'** :\n- Utilisez le **Suggestion Agent**\n- Transmettez la requête complète de l'utilisateur\n- L'agent retournera des suggestions de plats camerounais au format JSON\n\n**Si action = 'generate_recipe'** :\n- Utilisez le **Recipe Agent**\n- Transmettez le nom du plat et tout contexte pertinent\n- L'agent générera une recette complète structurée au format JSON\n\n**Si action = 'cooking_advice'** :\n- Utilisez l'**Advice Agent**\n- Transmettez la question ou problème culinaire\n- L'agent fournira des conseils détaillés au format JSON\n\n⚡ RÈGLES CRITIQUES :\n1. Utilisez TOUJOURS l'outil correspondant à l'action détectée\n2. Transmettez TOUTE la requête de l'utilisateur à l'outil sans modification\n3. RETOURNEZ EXACTEMENT la réponse JSON de l'outil sans modification\n4. N'ajoutez AUCUN texte explicatif, formatage ou tableau\n5. Faites confiance à la classification AI et aux agents spécialisés\n\n💬 COMPORTEMENT ATTENDU :\nAppeler l'outil approprié avec la requête complète.\nL'outil retournera une réponse JSON structurée que vous devez retourner telle quelle.\nNe générez AUCUNE réponse textuelle - laissez les outils faire leur travail.\n\nSession ID: {{ $json.session_id }}\nTimestamp: {{ $json.timestamp }}"
+        }
+      },
+      "id": "efd08e4e-8e60-4740-93fe-af4a4738a3b7",
+      "name": "Tchop AI Master Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -3056,
+        -608
+      ],
+      "onError": "continueErrorOutput"
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "localhost:5678",
+            "connection": "keep-alive",
+            "content-length": "153",
+            "sec-ch-ua-platform": "\"Linux\"",
+            "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+            "sec-ch-ua": "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"",
+            "content-type": "application/json",
+            "x-session-id": "session_1759981710487",
+            "sec-ch-ua-mobile": "?0",
+            "accept": "*/*",
+            "origin": "http://127.0.0.1:5501",
+            "sec-fetch-site": "cross-site",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+            "referer": "http://127.0.0.1:5501/",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "query": "J'ai du poulet, des poivrons et des oignons. Que puis-je cuisiner?",
+            "context": {
+              "timestamp": "2025-10-09T04:00:38.347Z",
+              "source": "web-frontend"
+            }
+          },
+          "webhookUrl": "http://localhost:5678/webhook/tchopia-ai",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
   "connections": {
-    "ChatGPT": {
-      "ai_languageModel": [
+    "Request Preprocessor": {
+      "main": [
         [
           {
-            "node": "Tchop AI1",
-            "type": "ai_languageModel",
+            "node": "Intent Classifier AI",
+            "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Request Router": {
+    "Intent Classifier AI": {
       "main": [
         [
           {
-            "node": "Tchop AI1",
+            "node": "Classification Parser",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classification Parser": {
+      "main": [
+        [
+          {
+            "node": "Tchop AI Master Agent",
             "type": "main",
             "index": 0
           }
@@ -268,19 +486,8 @@
       "ai_memory": [
         [
           {
-            "node": "Tchop AI1",
+            "node": "Tchop AI Master Agent",
             "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Response Parser": {
-      "main": [
-        [
-          {
-            "node": "Webhook Response1",
-            "type": "main",
             "index": 0
           }
         ]
@@ -297,11 +504,140 @@
         ]
       ]
     },
-    "Tchop AI1": {
+    "Webhook": {
       "main": [
         [
           {
-            "node": "Response Parser",
+            "node": "Request Preprocessor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Tchop AI Master Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Intent Classifier AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Gets suggestions Parser",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Cooking Advice Parser",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Recipe Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Suggestion Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Tchop AI Master Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recipe Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Tchop AI Master Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Advice Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Tchop AI Master Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Recipe Parser": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cooking Advice Parser": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gets suggestions Parser": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "Tchop AI Master Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tchop AI Master Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
             "type": "main",
             "index": 0
           }
@@ -314,79 +650,13 @@
           }
         ]
       ]
-    },
-    "Suggestion Agent1": {
-      "ai_tool": [
-        [
-          {
-            "node": "Tchop AI1",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Recipe Agent1": {
-      "ai_tool": [
-        [
-          {
-            "node": "Tchop AI1",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Advice Agent1": {
-      "ai_tool": [
-        [
-          {
-            "node": "Tchop AI1",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Think1": {
-      "ai_tool": [
-        [
-          {
-            "node": "Tchop AI1",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Calculator1": {
-      "ai_tool": [
-        [
-          {
-            "node": "Tchop AI1",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Webhook": {
-      "main": [
-        [
-          {
-            "node": "Request Router",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "e9b63531-2bcd-4862-a851-2f27fa26eabe",
+  "versionId": "5712f219-7ca6-4eb2-922d-e1d913b4a49c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "93ace94098d9f9dd844138bcf4397e622c6ea8d222af8db31040119d08e72bcf"

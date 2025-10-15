@@ -1,6 +1,6 @@
 // TchopIA Recipe Generator - Specialized Recipe Generation Page
 // Configuration
-const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook/tchopia-ai';
+const N8N_WEBHOOK_URL = 'https://n8n-service-apox.onrender.com/webhook/tchopia-ai';
 
 // DOM Elements
 let mobileMenuBtn, mobileMenu, recipeForm, recipeInput, generateRecipeBtn;
